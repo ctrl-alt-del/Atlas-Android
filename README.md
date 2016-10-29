@@ -1,5 +1,7 @@
 #Atlas
 
+* [Tenor Gif Integration](#tenor-gif-integration)
+
 ##<a name="overview"></a>Overview
 
 Atlas is an open source framework of customizable UI components for use with the Layer SDK designed to get messaging tested and integrated quickly.  This repository contains the Atlas library.  For a fully-featured messaging app, see the open source [Atlas Messenger](https://github.com/layerhq/Atlas-Android-Messenger) project, which uses this Atlas library and the Layer SDK.
@@ -252,3 +254,63 @@ Atlas was developed in San Francisco by the Layer team. If you have any technica
 ###<a name="credits"></a>Credits
 
 * [Steven Jones](https://github.com/sjones94549)
+
+
+
+## Tenor Gif Integration
+All files needed for gif integration are put under `com.layer.atlas.tenor` package.
+
+### Initiate Tenor Service
+On the `onCreate()` of you `Application` class, add:
+```java
+GlideUtils.init(this);
+if (BuildConfig.DEBUG) {
+    ApiClient.setProtocolType(ApiClient.HTTP);
+    ApiClient.setServer("qa-api");
+}
+
+// put your tenor API key here
+ApiClient.setApiKey("");
+
+// request keyboard id
+if (!AbstractSessionUtils.hasKeyboardId(this)) {
+
+    ApiClient.getKeyboardId(this, new OnKeyboardIdLoadedListener() {
+        @Override
+        public void onReceiveKeyboardIdSucceeded(String keyboardId) {
+        }
+
+        @Override
+        public void onReceiveKeyboardIdFailed(BaseError error) {
+        }
+    });
+}
+```
+
+
+### Register `CellFactory`, `Sender` and `MimeType` classes
+
+1. on your `AtlasMessagesRecyclerView` or its subclass, add:
+```java
+.addCellFactories(new ThreePartGifCellFactory(this, getLayerClient()))
+```
+
+2. on your `AtlasMessageComposer` or its subclass, add:
+```java
+.setGifSender(new GifSender(R.string.attachment_menu_gif, R.drawable.ic_logo_white, this))
+```
+
+3. on your `LayerClient.Options()`, add:
+```java
+.autoDownloadMimeTypes(Arrays.asList(
+    ThreePartGifUtils.MIME_TYPE_GIF_INFO,
+    ThreePartGifUtils.MIME_TYPE_GIF_PREVIEW,
+    ThreePartGifUtils.MIME_TYPE_GIF));
+```
+
+### Implement smart gif suggestion:
+
+1. on the `onCreate()` of your `MessagesListActivity` or equivalent, add:
+`SmartGifsUtils.clear();`
+
+

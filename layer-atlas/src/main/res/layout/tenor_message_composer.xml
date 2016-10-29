@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="8dp">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/tmc_rv_gifs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/tenor_gif_adapter_height"
+        android:background="@color/atlas_color_primary_gray"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/atlas_message_composer_background"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/tmc_iv_open_gifs_rv"
+            android:layout_width="@dimen/atlas_icon_button_size"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@drawable/ic_tenor_logo_tinted" />
+
+        <include layout="@layout/atlas_message_composer" />
+    </LinearLayout>
+</LinearLayout>

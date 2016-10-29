@@ -85,4 +85,5 @@
     <dimen name="atlas_participant_filter_min_width">32dp</dimen>
     <dimen name="atlas_selected_participant_group_max_height">96dp</dimen>
 
+    <dimen name="tenor_gif_adapter_height">96dp</dimen>
 </resources>

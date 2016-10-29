@@ -2,16 +2,17 @@ package com.layer.atlas.messagetypes.text;
 
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.textservice.TextInfo;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
+import com.layer.atlas.tenor.SmartGifsUtils;
 import com.layer.atlas.util.Util;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Identity;
@@ -70,6 +71,9 @@ public class TextCellFactory extends AtlasCellFactory<TextCellFactory.CellHolder
 
     @Override
     public void bindCellHolder(CellHolder cellHolder, final TextInfo parsed, Message message, CellHolderSpecs specs) {
+
+        SmartGifsUtils.update(parsed.getString(), specs.position);
+
         cellHolder.mTextView.setText(parsed.getString());
         cellHolder.mTextView.setTag(parsed);
         cellHolder.mTextView.setOnLongClickListener(this);

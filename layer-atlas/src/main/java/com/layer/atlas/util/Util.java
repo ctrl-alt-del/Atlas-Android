@@ -29,6 +29,7 @@ import com.layer.atlas.messagetypes.location.LocationCellFactory;
 import com.layer.atlas.messagetypes.singlepartimage.SinglePartImageCellFactory;
 import com.layer.atlas.messagetypes.text.TextCellFactory;
 import com.layer.atlas.messagetypes.threepartimage.ThreePartImageCellFactory;
+import com.layer.atlas.tenor.threepartgif.ThreePartGifCellFactory;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.exceptions.LayerException;
 import com.layer.sdk.listeners.LayerAuthenticationListener;
@@ -76,6 +77,9 @@ public class Util {
     public static String getLastMessageString(Context context, Message message) {
         if (TextCellFactory.isType(message)) {
             return TextCellFactory.getMessagePreview(context, message);
+        }
+        if (ThreePartGifCellFactory.isType(message)) {
+            return ThreePartGifCellFactory.getMessagePreview(context, message);
         }
         if (ThreePartImageCellFactory.isType(message)) {
             return ThreePartImageCellFactory.getMessagePreview(context, message);

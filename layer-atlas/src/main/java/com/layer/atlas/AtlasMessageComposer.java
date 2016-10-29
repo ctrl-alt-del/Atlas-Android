@@ -27,8 +27,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Editable;
-import android.text.TextWatcher;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -45,26 +47,49 @@ import android.widget.TextView;
 import com.layer.atlas.messagetypes.AttachmentSender;
 import com.layer.atlas.messagetypes.MessageSender;
 import com.layer.atlas.messagetypes.text.TextSender;
+import com.layer.atlas.tenor.SmartGifsUtils;
+import com.layer.atlas.tenor.adapters.GifAdapter;
+import com.layer.atlas.tenor.adapters.OnDismissPopupWindowListener;
+import com.layer.atlas.tenor.presenters.impl.GifPresenter;
+import com.layer.atlas.tenor.rvitem.ResultRVItem;
+import com.layer.atlas.tenor.threepartgif.GifSender;
+import com.layer.atlas.tenor.views.IKeyboardView;
 import com.layer.atlas.util.EditTextUtil;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
+import com.tenor.android.core.constants.StringConstant;
+import com.tenor.android.core.listeners.TextWatcherAdapter;
+import com.tenor.android.core.models.Result;
+import com.tenor.android.core.responses.BaseError;
+import com.tenor.android.core.responses.GifsResponse;
+import com.tenor.android.core.rvwidgets.AbstractRVItem;
+import com.tenor.android.core.rvwidgets.EndlessRVOnScrollListener;
+import com.tenor.android.core.utils.AbstractListUtils;
+import com.tenor.android.core.utils.AbstractLocaleUtils;
+import com.tenor.android.core.utils.AbstractViewUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class AtlasMessageComposer extends FrameLayout {
+import retrofit2.Call;
+
+public class AtlasMessageComposer extends FrameLayout implements IKeyboardView {
     private EditText mMessageEditText;
     private Button mSendButton;
     private ImageView mAttachButton;
+    private ImageView mOpenGifsRVButton;
 
     private LayerClient mLayerClient;
     private Conversation mConversation;
 
     private TextSender mTextSender;
+    private GifSender mGifSender;
     private ArrayList<AttachmentSender> mAttachmentSenders = new ArrayList<AttachmentSender>();
     private MessageSender.Callback mMessageSenderCallback;
 
     private PopupWindow mAttachmentMenu;
+    private RecyclerView mGifsRV;
 
     // styles
     private boolean mEnabled;
@@ -75,6 +100,12 @@ public class AtlasMessageComposer extends FrameLayout {
     private int mUnderlineColor;
     private int mCursorColor;
     private Drawable mAttachmentSendersBackground;
+    private GifPresenter mPresenter;
+    private String mNextPageId = "";
+    private GifAdapter<Context> mAdapter;
+    private static Call<GifsResponse> sSearchGifsCall;
+    private static boolean sTextChanged;
+
 
     public AtlasMessageComposer(Context context) {
         super(context);
@@ -91,15 +122,94 @@ public class AtlasMessageComposer extends FrameLayout {
         initAttachmentMenu(context, attrs, defStyle);
     }
 
+    private void showGifSearchView() {
+        AbstractViewUtils.showView(mGifsRV);
+        mOpenGifsRVButton.setImageResource(R.drawable.ic_arrow_back_white_24dp_tinted);
+    }
+
+    private void hideGifSearchView() {
+        AbstractViewUtils.hideView(mGifsRV);
+        mOpenGifsRVButton.setImageResource(R.drawable.ic_tenor_logo_tinted);
+    }
+
+    private void performGifSearch(Editable s) {
+
+        String str = s.toString().trim();
+        if (str.length() == 0) {
+            searchSmartOrTrendingGifs();
+            return;
+        }
+
+        if (mPresenter == null) {
+            return;
+        }
+
+        final boolean isAppend = !sTextChanged && !SmartGifsUtils.isMessageChanged();
+        if (!isAppend) {
+            mNextPageId = StringConstant.EMPTY;
+        }
+
+        if (sSearchGifsCall != null) {
+            sSearchGifsCall.cancel();
+        }
+        sSearchGifsCall = mPresenter.search(str, AbstractLocaleUtils.getCurrentLocaleName(getContext()),
+                24, mNextPageId, null, isAppend);
+    }
+
     /**
      * Prepares this AtlasMessageComposer for use.
      *
      * @return this AtlasMessageComposer.
      */
     public AtlasMessageComposer init(LayerClient layerClient) {
-        LayoutInflater.from(getContext()).inflate(R.layout.atlas_message_composer, this);
+        LayoutInflater.from(getContext()).inflate(R.layout.tenor_message_composer, this);
 
         mLayerClient = layerClient;
+
+        mGifsRV = (RecyclerView) findViewById(R.id.tmc_rv_gifs);
+        mGifsRV.setFocusable(true);
+
+        mPresenter = new GifPresenter(this);
+        mAdapter = new GifAdapter<>(getContext()).setDismissPopupWindowListener(new OnDismissPopupWindowListener() {
+            @Override
+            public void dismiss() {
+                hideGifSearchView();
+            }
+        });
+
+        mGifsRV.setAdapter(mAdapter);
+
+        final StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.HORIZONTAL);
+        mGifsRV.setLayoutManager(layoutManager);
+
+        mGifsRV.addOnScrollListener(new EndlessRVOnScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int currentPage) {
+                if (mMessageEditText.getText().toString().trim().length() > 0) {
+                    performGifSearch(mMessageEditText.getText());
+                } else {
+                    searchSmartOrTrendingGifs();
+                }
+            }
+        });
+
+        mOpenGifsRVButton = (ImageView) findViewById(R.id.tmc_iv_open_gifs_rv);
+        mOpenGifsRVButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mGifsRV.getVisibility() == VISIBLE) {
+                    hideGifSearchView();
+                    return;
+                }
+
+                showGifSearchView();
+                if (mMessageEditText.getText().toString().trim().length() > 0) {
+                    performGifSearch(mMessageEditText.getText());
+                } else {
+                    searchSmartOrTrendingGifs();
+                }
+            }
+        });
 
         mAttachButton = (ImageView) findViewById(R.id.attachment);
         mAttachButton.setOnClickListener(new OnClickListener() {
@@ -111,17 +221,10 @@ public class AtlasMessageComposer extends FrameLayout {
         });
 
         mMessageEditText = (EditText) findViewById(R.id.message_edit_text);
-        mMessageEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
+        mMessageEditText.addTextChangedListener(new TextWatcherAdapter() {
             @Override
             public void afterTextChanged(Editable s) {
+                sTextChanged = true;
                 if (mConversation == null || mConversation.isDeleted()) return;
                 if (s.length() > 0) {
                     mSendButton.setEnabled(isEnabled());
@@ -129,6 +232,10 @@ public class AtlasMessageComposer extends FrameLayout {
                 } else {
                     mSendButton.setEnabled(false);
                     mConversation.send(LayerTypingIndicatorListener.TypingIndicator.FINISHED);
+                }
+
+                if (mGifsRV.getVisibility() == View.VISIBLE) {
+                    performGifSearch(s);
                 }
             }
         });
@@ -154,6 +261,7 @@ public class AtlasMessageComposer extends FrameLayout {
     public AtlasMessageComposer setConversation(Conversation conversation) {
         mConversation = conversation;
         if (mTextSender != null) mTextSender.setConversation(conversation);
+        if (mGifSender != null) mGifSender.setConversation(conversation);
         for (AttachmentSender sender : mAttachmentSenders) {
             sender.setConversation(conversation);
         }
@@ -182,6 +290,21 @@ public class AtlasMessageComposer extends FrameLayout {
         mTextSender.init(this.getContext().getApplicationContext(), mLayerClient);
         mTextSender.setConversation(mConversation);
         if (mMessageSenderCallback != null) mTextSender.setCallback(mMessageSenderCallback);
+        return this;
+    }
+
+    /**
+     * Sets the GifSender used for sending composed gif messages.
+     *
+     * @param gifSender GifSender used for sending composed gif messages.
+     * @return This AtlasMessageComposer.
+     */
+    public AtlasMessageComposer setGifSender(GifSender gifSender) {
+        mGifSender = gifSender;
+        mGifSender.init(this.getContext().getApplicationContext(), mLayerClient);
+        mGifSender.setConversation(mConversation);
+        if (mMessageSenderCallback != null) mGifSender.setCallback(mMessageSenderCallback);
+        mAdapter.setGifSender(mGifSender);
         return this;
     }
 
@@ -294,7 +417,6 @@ public class AtlasMessageComposer extends FrameLayout {
         mMessageEditText.setTextSize(TypedValue.COMPLEX_UNIT_PX, mTextSize);
         EditTextUtil.setCursorDrawableColor(mMessageEditText, mCursorColor);
         EditTextUtil.setUnderlineColor(mMessageEditText, mUnderlineColor);
-        applyTypeface();
 
         ColorStateList list = getResources().getColorStateList(R.color.atlas_message_composer_attach_button);
         Drawable d = DrawableCompat.wrap(mAttachButton.getDrawable().mutate());
@@ -306,6 +428,33 @@ public class AtlasMessageComposer extends FrameLayout {
         mMessageEditText.setTypeface(mTypeFace, mTextStyle);
     }
 
+    private void searchSmartOrTrendingGifs() {
+        if (mPresenter == null) {
+            return;
+        }
+
+        /*
+         * Don't append new gifs to the existing ones if:
+         * (1) user type in new character
+         * (2) user receive new message
+         */
+        final boolean isAppend = !sTextChanged && !SmartGifsUtils.isMessageChanged();
+        if (!isAppend) {
+            mNextPageId = StringConstant.EMPTY;
+        }
+
+        if (sSearchGifsCall != null) {
+            sSearchGifsCall.cancel();
+        }
+
+        if (!TextUtils.isEmpty(SmartGifsUtils.getSearchQuery())) {
+            sSearchGifsCall = mPresenter.search(SmartGifsUtils.getSearchQuery(),
+                    AbstractLocaleUtils.getCurrentLocaleName(getContext()), 24, mNextPageId, null, isAppend);
+        } else {
+            sSearchGifsCall = mPresenter.getTrending(24, mNextPageId, null, isAppend);
+        }
+    }
+
     private void addAttachmentMenuItem(AttachmentSender sender) {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         LinearLayout menuLayout = (LinearLayout) mAttachmentMenu.getContentView();
@@ -314,9 +463,13 @@ public class AtlasMessageComposer extends FrameLayout {
         ((TextView) menuItem.findViewById(R.id.title)).setText(sender.getTitle());
         menuItem.setTag(sender);
         menuItem.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
+            public void onClick(final View v) {
                 mAttachmentMenu.dismiss();
-                ((AttachmentSender) v.getTag()).requestSend();
+                if (v.getTag() instanceof GifSender) {
+                    searchSmartOrTrendingGifs();
+                } else {
+                    ((AttachmentSender) v.getTag()).requestSend();
+                }
             }
         });
         if (sender.getIcon() != null) {
@@ -372,6 +525,44 @@ public class AtlasMessageComposer extends FrameLayout {
             if (parcelable == null) continue;
             sender.onRestoreInstanceState(parcelable);
         }
+    }
+
+    @Override
+    public void onReceiveSearchResultsSucceed(GifsResponse response, boolean isAppend) {
+        sTextChanged = false;
+        SmartGifsUtils.resetMessageChanged();
+        List<AbstractRVItem> items = new ArrayList<>();
+
+        for (Result result : AbstractListUtils.shuffle(response.getResults())) {
+            items.add(new ResultRVItem(GifAdapter.TYPE_GIF_ITEM, result));
+        }
+        mAdapter.insert(items, isAppend);
+        mNextPageId = response.getNext();
+    }
+
+    @Override
+    public void onReceiveSearchResultsFailed(BaseError error) {
+        sTextChanged = false;
+        SmartGifsUtils.resetMessageChanged();
+    }
+
+    @Override
+    public void onReceiveTrendingSucceeded(List<Result> list, String nextPageId, boolean isAppend) {
+        sTextChanged = false;
+        SmartGifsUtils.resetMessageChanged();
+        List<AbstractRVItem> items = new ArrayList<>();
+
+        for (Result result : AbstractListUtils.shuffle(list)) {
+            items.add(new ResultRVItem(GifAdapter.TYPE_GIF_ITEM, result));
+        }
+        mAdapter.insert(items, isAppend);
+        mNextPageId = nextPageId;
+    }
+
+    @Override
+    public void onReceiveTrendingFailed(BaseError error) {
+        sTextChanged = false;
+        SmartGifsUtils.resetMessageChanged();
     }
 
     /**
