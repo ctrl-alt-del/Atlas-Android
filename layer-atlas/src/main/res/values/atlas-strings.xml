@@ -63,5 +63,5 @@
     <string name="atlas_message_composer_send_button">SEND</string>
 
     <string name="attachment_menu_gif">Gif</string>
-
+    <string name="tenor_message_composer_gif_search_hint">Search Gif on Tenor</string>
 </resources>
