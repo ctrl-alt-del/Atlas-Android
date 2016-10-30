@@ -15,9 +15,17 @@ import com.layer.sdk.messaging.Identity;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.PushNotificationPayload;
 import com.tenor.android.core.models.Result;
+import com.tenor.android.core.networks.ApiClient;
+import com.tenor.android.core.responses.BaseError;
+import com.tenor.android.core.responses.GifsResponse;
+import com.tenor.android.core.responses.WeakViewCallback;
+import com.tenor.android.core.utils.AbstractLocaleUtils;
+import com.tenor.android.core.utils.AbstractSessionUtils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+
+import retrofit2.Call;
 
 import static android.support.v4.app.ActivityCompat.requestPermissions;
 import static android.support.v4.content.ContextCompat.checkSelfPermission;
@@ -96,10 +104,27 @@ public class GifSender extends AttachmentSender {
             Message message = ThreePartGifUtils.newThreePartGifMessage(activity, getLayerClient(), result);
 
             PushNotificationPayload payload = new PushNotificationPayload.Builder()
-                    .text(getContext().getString(R.string.atlas_notification_gif, myName))
+                    .text(activity.getString(R.string.atlas_notification_gif, myName))
                     .build();
             message.getOptions().defaultPushNotificationPayload(payload);
             send(message);
+
+            // register share to improve the accuracy of search results in the future
+            ApiClient.getInstance(activity)
+                    .registerShare(ApiClient.getApiKey(), Integer.valueOf(result.getId()),
+                            AbstractLocaleUtils.getCurrentLocaleName(activity),
+                            AbstractSessionUtils.getKeyboardId(activity))
+                    .enqueue(new WeakViewCallback<GifsResponse>(activity) {
+                        @Override
+                        public void success(GifsResponse response) {
+                            // do nothing
+                        }
+
+                        @Override
+                        public void failure(BaseError error) {
+                            // ignored
+                        }
+                    });
         } catch (IOException e) {
             if (Log.isLoggable(Log.ERROR)) Log.e(e.getMessage(), e);
         }
