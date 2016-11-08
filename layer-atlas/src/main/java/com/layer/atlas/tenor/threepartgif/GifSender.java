@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.layer.atlas.R;
@@ -18,7 +19,7 @@ import com.tenor.android.core.models.Result;
 import com.tenor.android.core.networks.ApiClient;
 import com.tenor.android.core.responses.BaseError;
 import com.tenor.android.core.responses.GifsResponse;
-import com.tenor.android.core.responses.WeakViewCallback;
+import com.tenor.android.core.responses.WeakRefCallback;
 import com.tenor.android.core.utils.AbstractLocaleUtils;
 import com.tenor.android.core.utils.AbstractSessionUtils;
 
@@ -114,14 +115,14 @@ public class GifSender extends AttachmentSender {
                     .registerShare(ApiClient.getApiKey(), Integer.valueOf(result.getId()),
                             AbstractLocaleUtils.getCurrentLocaleName(activity),
                             AbstractSessionUtils.getKeyboardId(activity))
-                    .enqueue(new WeakViewCallback<GifsResponse>(activity) {
+                    .enqueue(new WeakRefCallback<GifsResponse, Activity>(activity) {
                         @Override
-                        public void success(GifsResponse response) {
+                        public void success(@NonNull Activity activity, GifsResponse response) {
                             // do nothing
                         }
 
                         @Override
-                        public void failure(BaseError error) {
+                        public void failure(@NonNull Activity activity, BaseError error) {
                             // ignored
                         }
                     });

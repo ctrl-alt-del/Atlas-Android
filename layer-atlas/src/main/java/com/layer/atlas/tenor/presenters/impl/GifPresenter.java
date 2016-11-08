@@ -1,5 +1,6 @@
 package com.layer.atlas.tenor.presenters.impl;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.layer.atlas.tenor.presenters.IGifPresenter;
@@ -9,7 +10,7 @@ import com.tenor.android.core.networks.ApiClient;
 import com.tenor.android.core.presenters.impl.BasePresenter;
 import com.tenor.android.core.responses.BaseError;
 import com.tenor.android.core.responses.GifsResponse;
-import com.tenor.android.core.responses.WeakViewCallback;
+import com.tenor.android.core.responses.WeakRefCallback;
 import com.tenor.android.core.utils.AbstractListUtils;
 import com.tenor.android.core.utils.AbstractLocaleUtils;
 import com.tenor.android.core.utils.AbstractSessionUtils;
@@ -32,21 +33,15 @@ public class GifPresenter extends BasePresenter<IKeyboardView> implements IGifPr
                 qry, AbstractLocaleUtils.getCurrentLocaleName(getView().getContext()),
                 AbstractSessionUtils.getKeyboardId(getView().getContext()), limit, pos);
 
-        call.enqueue(new WeakViewCallback<GifsResponse>(getView()) {
+        call.enqueue(new WeakRefCallback<GifsResponse, IKeyboardView>(getWeakRef()) {
             @Override
-            public void success(GifsResponse response) {
-                if (!isAlive()) {
-                    return;
-                }
-                getView().onReceiveSearchResultsSucceed(response, isAppend);
+            public void success(@NonNull IKeyboardView view, GifsResponse response) {
+                view.onReceiveSearchResultsSucceed(response, isAppend);
             }
 
             @Override
-            public void failure(BaseError error) {
-                if (!isAlive()) {
-                    return;
-                }
-                getView().onReceiveSearchResultsFailed(error);
+            public void failure(@NonNull IKeyboardView view, BaseError error) {
+                view.onReceiveSearchResultsFailed(error);
             }
         });
         return call;
@@ -59,26 +54,19 @@ public class GifPresenter extends BasePresenter<IKeyboardView> implements IGifPr
                 AbstractLocaleUtils.getCurrentLocaleName(getView().getContext()),
                 AbstractSessionUtils.getKeyboardId(getView().getContext()));
 
-        call.enqueue(new WeakViewCallback<GifsResponse>(getView()) {
+        call.enqueue(new WeakRefCallback<GifsResponse, IKeyboardView>(getWeakRef()) {
             @Override
-            public void success(GifsResponse response) {
-                if (!isAlive()) {
-                    return;
-                }
-
+            public void success(@NonNull IKeyboardView view, GifsResponse response) {
                 if (response == null || (!isAppend && AbstractListUtils.isEmpty(response.getResults()))) {
                     // TODO: getView().onReceiveTrendingFailed();
                     return;
                 }
-                getView().onReceiveTrendingSucceeded(response.getResults(), response.getNext(), isAppend);
+                view.onReceiveTrendingSucceeded(response.getResults(), response.getNext(), isAppend);
             }
 
             @Override
-            public void failure(BaseError error) {
-                if (!isAlive()) {
-                    return;
-                }
-                getView().onReceiveTrendingFailed(error);
+            public void failure(@NonNull IKeyboardView view, BaseError error) {
+                view.onReceiveTrendingFailed(error);
             }
         });
         return call;

@@ -1,6 +1,5 @@
 package com.layer.atlas.tenor.adapters;
 
-import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.RecyclerView;
@@ -15,12 +14,13 @@ import com.layer.atlas.tenor.threepartgif.GifSender;
 import com.tenor.android.core.models.Result;
 import com.tenor.android.core.rvwidgets.AbstractRVItem;
 import com.tenor.android.core.rvwidgets.ListRVAdapter;
+import com.tenor.android.core.rvwidgets.StaggeredGridLayoutItemViewHolder;
 import com.tenor.android.core.utils.AbstractListUtils;
 
 import java.util.List;
 import java.util.Map;
 
-public class GifAdapter<T extends Context> extends ListRVAdapter<T, AbstractRVItem> {
+public class GifAdapter<CTX> extends ListRVAdapter<CTX, AbstractRVItem, StaggeredGridLayoutItemViewHolder<CTX>> {
 
     private static int ITEM_HEIGHT;
     public final static int TYPE_GIF_ITEM = 0;
@@ -28,26 +28,28 @@ public class GifAdapter<T extends Context> extends ListRVAdapter<T, AbstractRVIt
     private GifSender mGifSender;
     private OnDismissPopupWindowListener mListener;
 
-    public GifAdapter(T context) {
+    public GifAdapter(CTX context) {
         super(context);
         mWidths = new ArrayMap<>();
-        ITEM_HEIGHT = (int) context.getResources().getDimension(R.dimen.tenor_gif_adapter_height);
+        if (hasContext()) {
+            ITEM_HEIGHT = (int) getContext().getResources().getDimension(R.dimen.tenor_gif_adapter_height);
+        }
     }
 
-    public GifAdapter<T> setDismissPopupWindowListener(@Nullable final OnDismissPopupWindowListener listener) {
+    public GifAdapter<CTX> setDismissPopupWindowListener(@Nullable final OnDismissPopupWindowListener listener) {
         mListener = listener;
         return this;
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public StaggeredGridLayoutItemViewHolder<CTX> onCreateViewHolder(ViewGroup parent, int viewType) {
 
         final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view;
         switch (viewType) {
             default:
                 view = inflater.inflate(R.layout.tenor_gif_item_rvvh, null);
-                return new GifItemRVVH<>(view, getContext(), mGifSender, mListener);
+                return new GifItemRVVH<>(view, getCTX(), mGifSender, mListener);
         }
     }
 
@@ -56,7 +58,7 @@ public class GifAdapter<T extends Context> extends ListRVAdapter<T, AbstractRVIt
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(final StaggeredGridLayoutItemViewHolder<CTX> viewHolder, int position) {
 
         if (viewHolder instanceof GifItemRVVH) {
             final GifItemRVVH holder = (GifItemRVVH) viewHolder;
