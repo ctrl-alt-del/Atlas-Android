@@ -272,19 +272,8 @@ if (BuildConfig.DEBUG) {
 // put your tenor API key here
 ApiClient.setApiKey("");
 
-// request keyboard id
-if (!AbstractSessionUtils.hasKeyboardId(this)) {
-
-    ApiClient.getKeyboardId(this, new OnKeyboardIdLoadedListener() {
-        @Override
-        public void onReceiveKeyboardIdSucceeded(String keyboardId) {
-        }
-
-        @Override
-        public void onReceiveKeyboardIdFailed(BaseError error) {
-        }
-    });
-}
+// initialize ApiClient and request keyboard id
+ApiClient.init(this);
 ```
 
 
