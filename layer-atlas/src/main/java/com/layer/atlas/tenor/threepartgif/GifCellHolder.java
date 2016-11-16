@@ -8,11 +8,9 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.bumptech.glide.GifRequestBuilder;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.target.Target;
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
 import com.layer.atlas.tenor.GlideUtils;
@@ -22,6 +20,7 @@ import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
 import com.tenor.android.core.listeners.OnImageLoadedListener;
 import com.tenor.android.core.models.GlidePayload;
+import com.tenor.android.core.utils.AbstractUIUtils;
 
 import java.lang.ref.WeakReference;
 
@@ -59,7 +58,7 @@ public class GifCellHolder extends AtlasCellFactory.CellHolder implements View.O
         mProgressBar.show();
         GlidePayload payload = new GlidePayload(mImageView, info.previewPartId)
                 .setPlaceholder(PLACEHOLDER)
-                .setListener(new OnImageLoadedListener(){
+                .setListener(new OnImageLoadedListener() {
                     @Override
                     public void onImageLoadingFinished() {
                         mProgressBar.hide();
@@ -71,14 +70,26 @@ public class GifCellHolder extends AtlasCellFactory.CellHolder implements View.O
                     }
                 });
 
-        GifRequestBuilder<String> requestBuilder = GlideUtils.getInstance()
-                .load(payload.getPath())
-                .asGif()
-                .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                .override(info.width > 0 ? info.width : Target.SIZE_ORIGINAL,
-                        info.height > 0 ? info.height : Target.SIZE_ORIGINAL);
+        if (info.width > 0 && info.height > 0) {
+            // adjust gif size according to screen width
+            final float ratio = AbstractUIUtils.getScreenWidth(mrfActivity.get()) * 0.6f / info.width;
+            final int adjustedWidth = Math.round(info.width * ratio);
+            final int adjustedHeight = Math.round(info.height * ratio);
 
-        GlideUtils.load(requestBuilder, payload);
+            // load gif resource with specific width and height
+            payload.setWidth(adjustedWidth);
+            payload.setHeight(adjustedHeight);
+
+            ViewGroup.LayoutParams params = mImageView.getLayoutParams();
+            if (params != null) {
+                // specify image view with the width and height
+                params.width = adjustedWidth;
+                params.height = adjustedHeight;
+                mImageView.setLayoutParams(params);
+            }
+        }
+
+        GlideUtils.loadGif(mrfActivity.get(), payload);
     }
 
     @Override

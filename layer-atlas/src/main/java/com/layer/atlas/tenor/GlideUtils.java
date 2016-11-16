@@ -15,27 +15,15 @@ import com.tenor.android.core.utils.AbstractUIUtils;
 
 public class GlideUtils extends AbstractGlideUtils {
 
-    private static RequestManager sGlide;
-
-    public static void init(Context context) {
-        if (sGlide == null) {
-            sGlide = Glide.with(context);
+    public static void resumeRequests(@Nullable final Context context) {
+        if (context != null) {
+            Glide.with(context).resumeRequests();
         }
     }
 
-    public static RequestManager getInstance() {
-        return sGlide;
-    }
-
-    public static void resumeRequests() {
-        if (sGlide != null) {
-            sGlide.resumeRequests();
-        }
-    }
-
-    public static void pauseRequests() {
-        if (sGlide != null) {
-            sGlide.pauseRequests();
+    public static void pauseRequests(@Nullable final Context context) {
+        if (context != null) {
+            Glide.with(context).pauseRequests();
         }
     }
 
@@ -45,12 +33,11 @@ public class GlideUtils extends AbstractGlideUtils {
             return;
         }
 
-        GifRequestBuilder<String> requestBuilder = getInstance().load(payload.getPath()).asGif()
+        GifRequestBuilder<String> requestBuilder = Glide.with(activity).load(payload.getPath()).asGif()
                 .diskCacheStrategy(DiskCacheStrategy.RESULT);
 
-        final Media media = payload.getMedia();
-        if (media != null) {
-            requestBuilder.override(media.getWidth(), media.getHeight());
+        if (payload.getWidth() > 0 && payload.getHeight() > 0) {
+            requestBuilder.override(payload.getWidth(), payload.getHeight());
         }
         load(requestBuilder, payload);
     }

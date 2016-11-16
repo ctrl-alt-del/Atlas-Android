@@ -257,13 +257,22 @@ Atlas was developed in San Francisco by the Layer team. If you have any technica
 
 
 
-## Tenor Gif Integration
-All files needed for gif integration are put under `com.layer.atlas.tenor` package.
 
-### Initiate Tenor Service
+
+
+## Tenor Gif Integration
+All java classes that are needed for gif integration are put under `com.layer.atlas.tenor` package.
+
+* [Initialize Tenor Service](#initialize-tenor-service)
+  * [Customized User-Agent](#customized-user-agent)
+  * [Customized Interceptor](#customized-interceptor)
+* [Register `CellFactory`, `Sender` and `MimeType` classes](#register-cellfactory-sender-and-mimetype-classes)
+* [Implement Smart Gif Suggestion](#implement-smart-gif-suggestion)
+
+
+### Initialize Tenor Service
 On the `onCreate()` of you `Application` class, add:
 ```java
-GlideUtils.init(this);
 if (BuildConfig.DEBUG) {
     ApiClient.setProtocolType(ApiClient.HTTP);
     ApiClient.setServer("qa-api");
@@ -275,6 +284,43 @@ ApiClient.setApiKey("");
 // initialize ApiClient and request keyboard id
 ApiClient.init(this);
 ```
+
+
+
+#### Customized User-Agent
+If you want to customize the User-Agent of all your API requests, you need to supply an `Interceptor` when initializing the `ApiClient`:
+```java
+/*
+ * initialize custom user-agent for all requests
+ * by using CustomUserAgent and UserAgentInterceptor
+ */
+AbstractNetworkUtils.initUserAgent(
+        new CustomUserAgent.Builder(BuildConfig.APPLICATION_ID, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+                .locale(AbstractLocaleUtils.getCurrentLocaleName(this))
+                .build()
+);
+final Interceptor interceptor = new UserAgentInterceptor(this, AbstractNetworkUtils.getUserAgent(this));
+
+// request keyboard id with custom user-agent interceptor
+ApiClient.init(this, interceptor);
+```
+
+
+
+#### Customized Interceptor
+You can also construct and supply your own `Interceptor` when initializing the `ApiClient`:
+```java
+final Interceptor interceptor = new Interceptor() {
+    @Override
+    public Response intercept(Chain chain) throws IOException {
+        return null;
+    }
+};
+
+// request keyboard id with custom interceptor
+ApiClient.init(this, interceptor);
+```
+
 
 
 ### Register `CellFactory`, `Sender` and `MimeType` classes
@@ -297,9 +343,7 @@ ApiClient.init(this);
     ThreePartGifUtils.MIME_TYPE_GIF));
 ```
 
-### Implement smart gif suggestion:
+### Implement Smart Gif Suggestion
 
 1. on the `onCreate()` of your `MessagesListActivity` or equivalent, add:
 `SmartGifsUtils.clear();`
-
-

@@ -7,6 +7,7 @@ import android.support.v4.widget.ContentLoadingProgressBar;
 import android.widget.ImageView;
 
 import com.bumptech.glide.GifRequestBuilder;
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.layer.atlas.R;
@@ -56,7 +57,7 @@ public class GifPopupActivity extends Activity implements LayerProgressListener.
                     }
                 });
 
-        GifRequestBuilder<String> requestBuilder = GlideUtils.getInstance()
+        GifRequestBuilder<String> requestBuilder = Glide.with(this)
                 .load(payload.getPath())
                 .asGif()
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE);

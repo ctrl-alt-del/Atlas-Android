@@ -16,6 +16,7 @@ import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
 import com.tenor.android.core.utils.AbstractGsonUtils;
+import com.tenor.android.core.utils.AbstractWeakReferenceUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -65,11 +66,15 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
     public void onScrollStateChanged(int newState) {
         switch (newState) {
             case RecyclerView.SCROLL_STATE_DRAGGING:
-                GlideUtils.pauseRequests();
+                if (AbstractWeakReferenceUtils.isAlive(mActivity)) {
+                    GlideUtils.pauseRequests(mActivity.get());
+                }
                 break;
             case RecyclerView.SCROLL_STATE_IDLE:
             case RecyclerView.SCROLL_STATE_SETTLING:
-                GlideUtils.resumeRequests();
+                if (AbstractWeakReferenceUtils.isAlive(mActivity)) {
+                    GlideUtils.resumeRequests(mActivity.get());
+                }
                 break;
         }
     }

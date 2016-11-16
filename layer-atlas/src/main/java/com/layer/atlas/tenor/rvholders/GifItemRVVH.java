@@ -14,6 +14,7 @@ import com.tenor.android.core.models.Media;
 import com.tenor.android.core.models.Result;
 import com.tenor.android.core.rvwidgets.StaggeredGridLayoutItemViewHolder;
 import com.tenor.android.core.utils.AbstractGifUtils;
+import com.tenor.android.core.utils.AbstractUIUtils;
 import com.tenor.android.core.utils.AbstractViewUtils;
 
 public class GifItemRVVH<T> extends StaggeredGridLayoutItemViewHolder<T> {
@@ -63,10 +64,16 @@ public class GifItemRVVH<T> extends StaggeredGridLayoutItemViewHolder<T> {
 
         final int placeholderColor = Color.parseColor(result.getPlaceholderColor());
 
+        final Media media = AbstractGifUtils.getMedia(result, AbstractGifUtils.MEDIA_TINY_GIF);
         GlidePayload payload = new GlidePayload(mImageView, tinyGif.getUrl())
                 .setPlaceholder(placeholderColor)
-                .setMaxRetry(3)
-                .setMedia(AbstractGifUtils.getMedia(result, AbstractGifUtils.MEDIA_TINY_GIF));
+                .setMaxRetry(3);
+
+        if (media != null) {
+            final float density = AbstractUIUtils.getScreenDensity(getActivity());
+            payload.setWidth(Math.round(media.getWidth() * density));
+            payload.setHeight(Math.round(media.getHeight() * density));
+        }
 
         GlideUtils.loadGif(getActivity(), payload);
 
