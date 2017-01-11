@@ -20,7 +20,7 @@ import com.tenor.android.sdk.listeners.OnImageLoadedListener;
 import com.tenor.android.sdk.models.GlidePayload;
 
 /**
- * AtlasImagePopupActivity implements a ful resolution image viewer Activity.  This Activity
+ * GifPopupActivity implements a ful resolution gif viewer Activity.  This Activity
  * registers with the LayerClient as a LayerProgressListener to monitor progress.
  */
 public class GifPopupActivity extends Activity implements LayerProgressListener.BackgroundThread.Weak, SubsamplingScaleImageView.OnImageEventListener {
@@ -45,7 +45,7 @@ public class GifPopupActivity extends Activity implements LayerProgressListener.
 
         mProgressBar.show();
         GlidePayload payload = new GlidePayload(mImageView, mMessagePartFullId)
-                .setListener(new OnImageLoadedListener(){
+                .setListener(new OnImageLoadedListener() {
                     @Override
                     public void onImageLoadingFinished() {
                         mProgressBar.hide();
@@ -81,11 +81,6 @@ public class GifPopupActivity extends Activity implements LayerProgressListener.
         sLayerClient = layerClient;
     }
 
-
-    //==============================================================================================
-    // SubsamplingScaleImageView.OnImageEventListener: hide progress bar when full part loaded
-    //==============================================================================================
-
     @Override
     public void onReady() {
 
@@ -113,11 +108,6 @@ public class GifPopupActivity extends Activity implements LayerProgressListener.
         if (Log.isLoggable(Log.ERROR)) Log.e(e.getMessage(), e);
         mProgressBar.hide();
     }
-
-
-    //==============================================================================================
-    // LayerProgressListener: update progress bar while downloading
-    //==============================================================================================
 
     @Override
     public void onProgressStart(MessagePart messagePart, Operation operation) {

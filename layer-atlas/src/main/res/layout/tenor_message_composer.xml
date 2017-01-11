@@ -10,8 +10,8 @@
         android:id="@+id/tmc_rv_gifs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/tenor_gif_adapter_height"
         android:background="@color/atlas_color_primary_gray"
+        android:minHeight="@dimen/tenor_gif_adapter_height"
         android:orientation="horizontal"
         android:visibility="gone"
         tools:visibility="visible" />

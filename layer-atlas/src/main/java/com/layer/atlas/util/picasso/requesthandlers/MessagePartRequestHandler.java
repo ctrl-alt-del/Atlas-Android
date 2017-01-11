@@ -1,7 +1,6 @@
 package com.layer.atlas.util.picasso.requesthandlers;
 
 import android.net.Uri;
-import android.util.Log;
 
 import com.layer.atlas.util.Util;
 import com.layer.sdk.LayerClient;
@@ -42,9 +41,6 @@ public class MessagePartRequestHandler extends com.squareup.picasso.RequestHandl
         Queryable queryable = mLayerClient.get(request.uri);
         if (!(queryable instanceof MessagePart)) return null;
         MessagePart part = (MessagePart) queryable;
-
-        Log.e("==> ", "==> " + part.toString());
-
         if (part.isContentReady()) return new Result(part.getDataStream(), LoadedFrom.DISK);
         if (!Util.downloadMessagePart(mLayerClient, part, 3, TimeUnit.MINUTES)) return null;
         return new Result(part.getDataStream(), LoadedFrom.NETWORK);

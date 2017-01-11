@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
 import com.layer.atlas.tenor.GlideUtils;
-import com.layer.atlas.util.picasso.transformations.RoundedTransform;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
@@ -22,9 +21,8 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
- * ThreePartImage handles image Messages with three parts: full image, preview image, and
- * image metadata.  The image metadata contains full image dimensions and rotation information used
- * for sizing and rotating images efficiently.
+ * ThreePartGif handles gif Messages with three parts: full gif, preview gif, and
+ * gif metadata.
  */
 public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, GifInfo> {
 
@@ -113,8 +111,14 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
 
         try {
             GifInfo info = AbstractGsonUtils.getInstance().fromJson(str, GifInfo.class);
-            info.previewPartId = new String(ThreePartGifUtils.getPreviewPart(message).getData());
-            info.fullPartId = new String(ThreePartGifUtils.getFullPart(message).getData());
+
+            if (TextUtils.isEmpty(info.previewPartId)) {
+                info.previewPartId = new String(ThreePartGifUtils.getPreviewPart(message).getData());
+            }
+
+            if (TextUtils.isEmpty(info.fullPartId)) {
+                info.fullPartId = new String(ThreePartGifUtils.getFullPart(message).getData());
+            }
             return info;
         } catch (Exception ignored) {
             return null;

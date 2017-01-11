@@ -124,7 +124,7 @@ public class AtlasMessageComposer extends FrameLayout implements IKeyboardView {
 
     private void showGifSearchView() {
         AbstractViewUtils.showView(mGifsRV);
-        mMessageEditText.setHint(R.string.tenor_message_composer_gif_search_hint);
+        mMessageEditText.setHint(R.string.tenor_sdk_search_hint);
         mOpenGifsRVButton.setImageResource(R.drawable.ic_arrow_back_white_24dp_tinted);
     }
 

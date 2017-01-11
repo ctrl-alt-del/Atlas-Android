@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
+import com.tenor.android.sdk.constants.StringConstant;
 import com.tenor.android.sdk.models.Media;
 import com.tenor.android.sdk.models.Result;
 import com.tenor.android.sdk.utils.AbstractGifUtils;
@@ -68,6 +69,8 @@ public class ThreePartGifUtils {
         if (gif != null) {
             GifInfo gifInfo = new GifInfo();
             gifInfo.contentId = result.getId();
+            gifInfo.previewPartId = !TextUtils.isEmpty(tinyGifUrl) ? tinyGifUrl : StringConstant.EMPTY;
+            gifInfo.fullPartId = !TextUtils.isEmpty(gifUrl) ? gifUrl : StringConstant.EMPTY;
             gifInfo.width = gif.getWidth();
             gifInfo.height = gif.getHeight();
             info = client.newMessagePart(MIME_TYPE_GIF_INFO, AbstractGsonUtils.getInstance().toJson(gifInfo).getBytes());
