@@ -4,7 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.tenor.android.core.constants.StringConstant;
+import com.tenor.android.sdk.constants.StringConstant;
 
 public class SmartGifsUtils {
 

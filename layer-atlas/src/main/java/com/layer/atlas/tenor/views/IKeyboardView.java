@@ -1,10 +1,10 @@
 package com.layer.atlas.tenor.views;
 
 
-import com.tenor.android.core.models.Result;
-import com.tenor.android.core.responses.BaseError;
-import com.tenor.android.core.responses.GifsResponse;
-import com.tenor.android.core.views.IBaseView;
+import com.tenor.android.sdk.models.Result;
+import com.tenor.android.sdk.responses.BaseError;
+import com.tenor.android.sdk.responses.GifsResponse;
+import com.tenor.android.sdk.views.IBaseView;
 
 import java.util.List;
 

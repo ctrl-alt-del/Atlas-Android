@@ -18,9 +18,9 @@ import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
-import com.tenor.android.core.listeners.OnImageLoadedListener;
-import com.tenor.android.core.models.GlidePayload;
-import com.tenor.android.core.utils.AbstractUIUtils;
+import com.tenor.android.sdk.listeners.OnImageLoadedListener;
+import com.tenor.android.sdk.models.GlidePayload;
+import com.tenor.android.sdk.utils.AbstractUIUtils;
 
 import java.lang.ref.WeakReference;
 

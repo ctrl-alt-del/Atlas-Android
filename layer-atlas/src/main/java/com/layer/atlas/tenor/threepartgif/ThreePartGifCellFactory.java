@@ -15,8 +15,8 @@ import com.layer.atlas.util.picasso.transformations.RoundedTransform;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
-import com.tenor.android.core.utils.AbstractGsonUtils;
-import com.tenor.android.core.utils.AbstractWeakReferenceUtils;
+import com.tenor.android.sdk.utils.AbstractGsonUtils;
+import com.tenor.android.sdk.utils.AbstractWeakReferenceUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.List;

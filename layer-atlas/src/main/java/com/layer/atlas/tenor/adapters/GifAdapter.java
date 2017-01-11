@@ -11,11 +11,11 @@ import com.layer.atlas.R;
 import com.layer.atlas.tenor.rvholders.GifItemRVVH;
 import com.layer.atlas.tenor.rvitem.ResultRVItem;
 import com.layer.atlas.tenor.threepartgif.GifSender;
-import com.tenor.android.core.models.Result;
-import com.tenor.android.core.rvwidgets.AbstractRVItem;
-import com.tenor.android.core.rvwidgets.ListRVAdapter;
-import com.tenor.android.core.rvwidgets.StaggeredGridLayoutItemViewHolder;
-import com.tenor.android.core.utils.AbstractListUtils;
+import com.tenor.android.sdk.models.Result;
+import com.tenor.android.sdk.rvwidgets.AbstractRVItem;
+import com.tenor.android.sdk.rvwidgets.ListRVAdapter;
+import com.tenor.android.sdk.rvwidgets.StaggeredGridLayoutItemViewHolder;
+import com.tenor.android.sdk.utils.AbstractListUtils;
 
 import java.util.List;
 import java.util.Map;

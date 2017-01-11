@@ -302,7 +302,8 @@ AbstractNetworkUtils.initUserAgent(
 final Interceptor interceptor = new UserAgentInterceptor(this, AbstractNetworkUtils.getUserAgent(this));
 
 // request keyboard id with custom user-agent interceptor
-ApiClient.init(this, interceptor);
+ApiClient.setInterceptor(interceptor);
+ApiClient.init(this);
 ```
 
 
@@ -318,7 +319,8 @@ final Interceptor interceptor = new Interceptor() {
 };
 
 // request keyboard id with custom interceptor
-ApiClient.init(this, interceptor);
+ApiClient.setInterceptor(interceptor);
+ApiClient.init(this);
 ```
 
 

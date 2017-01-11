@@ -9,13 +9,13 @@ import com.layer.atlas.R;
 import com.layer.atlas.tenor.GlideUtils;
 import com.layer.atlas.tenor.adapters.OnDismissPopupWindowListener;
 import com.layer.atlas.tenor.threepartgif.GifSender;
-import com.tenor.android.core.models.GlidePayload;
-import com.tenor.android.core.models.Media;
-import com.tenor.android.core.models.Result;
-import com.tenor.android.core.rvwidgets.StaggeredGridLayoutItemViewHolder;
-import com.tenor.android.core.utils.AbstractGifUtils;
-import com.tenor.android.core.utils.AbstractUIUtils;
-import com.tenor.android.core.utils.AbstractViewUtils;
+import com.tenor.android.sdk.models.GlidePayload;
+import com.tenor.android.sdk.models.Media;
+import com.tenor.android.sdk.models.Result;
+import com.tenor.android.sdk.rvwidgets.StaggeredGridLayoutItemViewHolder;
+import com.tenor.android.sdk.utils.AbstractGifUtils;
+import com.tenor.android.sdk.utils.AbstractUIUtils;
+import com.tenor.android.sdk.utils.AbstractViewUtils;
 
 public class GifItemRVVH<T> extends StaggeredGridLayoutItemViewHolder<T> {
 

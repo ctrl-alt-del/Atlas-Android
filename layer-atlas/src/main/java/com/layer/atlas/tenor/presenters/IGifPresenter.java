@@ -1,8 +1,8 @@
 package com.layer.atlas.tenor.presenters;
 
 import com.layer.atlas.tenor.views.IKeyboardView;
-import com.tenor.android.core.presenters.IBasePresenter;
-import com.tenor.android.core.responses.GifsResponse;
+import com.tenor.android.sdk.presenters.IBasePresenter;
+import com.tenor.android.sdk.responses.GifsResponse;
 
 import retrofit2.Call;
 

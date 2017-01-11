@@ -6,10 +6,10 @@ import android.text.TextUtils;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
-import com.tenor.android.core.models.Media;
-import com.tenor.android.core.models.Result;
-import com.tenor.android.core.utils.AbstractGifUtils;
-import com.tenor.android.core.utils.AbstractGsonUtils;
+import com.tenor.android.sdk.models.Media;
+import com.tenor.android.sdk.models.Result;
+import com.tenor.android.sdk.utils.AbstractGifUtils;
+import com.tenor.android.sdk.utils.AbstractGsonUtils;
 
 import java.io.IOException;
 

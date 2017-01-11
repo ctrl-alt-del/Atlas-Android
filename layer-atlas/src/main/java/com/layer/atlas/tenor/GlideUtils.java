@@ -8,10 +8,10 @@ import com.bumptech.glide.GifRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.tenor.android.core.models.GlidePayload;
-import com.tenor.android.core.models.Media;
-import com.tenor.android.core.utils.AbstractGlideUtils;
-import com.tenor.android.core.utils.AbstractUIUtils;
+import com.tenor.android.sdk.models.GlidePayload;
+import com.tenor.android.sdk.models.Media;
+import com.tenor.android.sdk.utils.AbstractGlideUtils;
+import com.tenor.android.sdk.utils.AbstractUIUtils;
 
 public class GlideUtils extends AbstractGlideUtils {
 

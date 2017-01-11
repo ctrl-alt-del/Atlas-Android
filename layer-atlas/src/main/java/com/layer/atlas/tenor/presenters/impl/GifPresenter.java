@@ -5,15 +5,15 @@ import android.text.TextUtils;
 
 import com.layer.atlas.tenor.presenters.IGifPresenter;
 import com.layer.atlas.tenor.views.IKeyboardView;
-import com.tenor.android.core.constants.StringConstant;
-import com.tenor.android.core.networks.ApiClient;
-import com.tenor.android.core.presenters.impl.BasePresenter;
-import com.tenor.android.core.responses.BaseError;
-import com.tenor.android.core.responses.GifsResponse;
-import com.tenor.android.core.responses.WeakRefCallback;
-import com.tenor.android.core.utils.AbstractListUtils;
-import com.tenor.android.core.utils.AbstractLocaleUtils;
-import com.tenor.android.core.utils.AbstractSessionUtils;
+import com.tenor.android.sdk.constants.StringConstant;
+import com.tenor.android.sdk.networks.ApiClient;
+import com.tenor.android.sdk.presenters.impl.BasePresenter;
+import com.tenor.android.sdk.responses.BaseError;
+import com.tenor.android.sdk.responses.GifsResponse;
+import com.tenor.android.sdk.responses.WeakRefCallback;
+import com.tenor.android.sdk.utils.AbstractListUtils;
+import com.tenor.android.sdk.utils.AbstractLocaleUtils;
+import com.tenor.android.sdk.utils.AbstractSessionUtils;
 
 import retrofit2.Call;
 
