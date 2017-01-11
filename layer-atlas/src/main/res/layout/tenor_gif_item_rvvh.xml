@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:foreground="?android:selectableItemBackground"
-    app:cardBackgroundColor="@color/tenor_trasparent"
+    app:cardBackgroundColor="@color/tenor_sdk_transparent"
     app:cardCornerRadius="0dp"
     app:cardPreventCornerOverlap="false"
     app:elevation="0dp">
