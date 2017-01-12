@@ -41,7 +41,7 @@ public class GifItemRVVH<T> extends StaggeredGridLayoutItemViewHolder<T> {
                 if (mGifSender == null || !hasActivity()) {
                     return;
                 }
-                mGifSender.send(getActivity(), mResult);
+                mGifSender.send(mResult);
 
                 if (mListener != null) {
                     mListener.dismiss();
