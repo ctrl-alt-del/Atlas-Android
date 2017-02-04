@@ -11,7 +11,7 @@ group 'com.layer.atlas'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         minSdkVersion 14
@@ -45,7 +45,7 @@ ext {
 
 dependencies {
     // Layer SDK
-    compile ('com.layer.sdk:layer-sdk:0.23.1') {
+    compile ('com.layer.sdk:layer-sdk:0.23.7') {
         exclude group: 'com.google.firebase', module: 'firebase-messaging'
         exclude group: 'com.google.firebase', module: 'firebase-core'
     }

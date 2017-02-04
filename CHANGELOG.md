@@ -1,5 +1,57 @@
 # Atlas Android
 
+## 0.4.1
+
+### Major Changes
+  * Update to Layer Android SDK Version 0.23.7
+  
+### Bug Fixes
+  * Fixed memory leak in `LocationSender`
+  * Fixed crash when a ThreePartImage's preview and image are the same size
+  * Fixed manifest merge issues + crashes caused by workarounds by removing the FileProvider required for CameraSender.
+  
+## 0.4.0
+
+### Major Changes
+  * Update to Layer Android SDK Version 0.23.6
+  * Added log markers for performance testing
+
+### Bug Fixes
+  * Fixed manifest merge issues + crashes caused by workarounds by removing the FileProvider required for CameraSender.
+
+### Migration Guide
+####  `CameraSender`
+  * Developers are now required to implement their own FileProvider and supply the CameraSender with the provider authority.
+  * Refer to `/docs/CameraSender.md` for details on how to implement a FileProvider
+
+## 0.3.7
+
+### Bug fixes
+  * Fixed crash when participant was removed from the conversation (APPS-2719)
+
+## 0.3.6
+
+### Features
+  * Added convenience methods for checking and requesting permissions in `AttachmentSender`
+  * Fix crash while using the Camera to take a photo on API Level 24 (Android 7.0 - Nougat)
+  * Fix crash while using the Gallery to upload a photo on API Level 24 (Android 7.0 - Nougat)
+
+## 0.3.5
+
+### Major Changes
+  * Update to Layer Android SDK Version 0.23.4
+
+## 0.3.4
+
+### Features
+  * No longer need to fork the project to create custom cell factories. Subclass `AtlasCellFactory` and register an instance with `AtlasConversationsAdapter` and `AtlasMessagesAdapter`.
+  * `ThreePartImageCellFactory`, `LocationCellFactory` and `SinglePartImageCellFactory` no longer require an `Activity` or `Context` to be supplied to the constructor. Those constructors are now deprecated. 
+
+## 0.3.3
+
+### Major Changes
+  * Update to Layer Android SDK Version 0.23.2
+
 ## 0.3.2
 
 ### Major Changes

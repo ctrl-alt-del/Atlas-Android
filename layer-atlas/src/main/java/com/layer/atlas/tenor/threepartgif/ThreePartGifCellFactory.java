@@ -37,7 +37,7 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
 
     @Override
     public boolean isBindable(Message message) {
-        return ThreePartGifCellFactory.isType(message);
+        return isType(message);
     }
 
     @Override
@@ -80,8 +80,8 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
     //==============================================================================================
     // Static utilities
     //==============================================================================================
-
-    public static boolean isType(Message message) {
+    @Override
+    public boolean isType(Message message) {
         List<MessagePart> parts = message.getMessageParts();
         return parts.size() == 3
                 && parts.get(ThreePartGifUtils.PART_INDEX_FULL).getMimeType().equals(ThreePartGifUtils.MIME_TYPE_GIF)
@@ -89,7 +89,8 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
                 && parts.get(ThreePartGifUtils.PART_INDEX_INFO).getMimeType().equals(ThreePartGifUtils.MIME_TYPE_GIF_INFO);
     }
 
-    public static String getMessagePreview(Context context, Message message) {
+    @Override
+    public String getPreviewText(Context context, Message message) {
         return context.getString(R.string.atlas_message_preview_gif);
     }
 
