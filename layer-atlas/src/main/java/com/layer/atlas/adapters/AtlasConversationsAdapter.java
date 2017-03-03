@@ -33,7 +33,6 @@ import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -190,14 +189,14 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
         Context context = viewHolder.itemView.getContext();
 
         viewHolder.setConversation(conversation);
-        HashSet<Identity> participants = new HashSet<>(conversation.getParticipants());
+        Set<Identity> participants = conversation.getParticipants();
         participants.remove(mLayerClient.getAuthenticatedUser());
 
         // Add the position to the positions map for Identity updates
         mIdentityEventListener.addIdentityPosition(position, participants);
 
         viewHolder.mAvatarCluster.setParticipants(participants);
-        viewHolder.mTitleView.setText(Util.getConversationTitle(mLayerClient, conversation));
+        viewHolder.mTitleView.setText(Util.getConversationTitle(mLayerClient, conversation, participants));
         viewHolder.applyStyle(conversation.getTotalUnreadMessageCount() > 0);
 
         if (lastMessage == null) {

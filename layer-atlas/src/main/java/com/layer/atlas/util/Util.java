@@ -24,19 +24,12 @@ import android.text.TextUtils;
 
 import com.layer.atlas.BuildConfig;
 import com.layer.atlas.R;
-import com.layer.atlas.messagetypes.generic.GenericCellFactory;
-import com.layer.atlas.messagetypes.location.LocationCellFactory;
-import com.layer.atlas.messagetypes.singlepartimage.SinglePartImageCellFactory;
-import com.layer.atlas.messagetypes.text.TextCellFactory;
-import com.layer.atlas.messagetypes.threepartimage.ThreePartImageCellFactory;
-import com.layer.atlas.tenor.threepartgif.ThreePartGifCellFactory;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.exceptions.LayerException;
 import com.layer.sdk.listeners.LayerAuthenticationListener;
 import com.layer.sdk.listeners.LayerProgressListener;
 import com.layer.sdk.messaging.Conversation;
 import com.layer.sdk.messaging.Identity;
-import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
 import com.layer.sdk.query.Queryable;
 
@@ -45,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,14 +68,18 @@ public class Util {
     }
 
     public static String getConversationTitle(LayerClient client, Conversation conversation) {
+        return getConversationTitle(client, conversation, conversation.getParticipants());
+    }
+
+    public static String getConversationTitle(LayerClient client, Conversation conversation, Set<Identity> participants) {
         String metadataTitle = getConversationMetadataTitle(conversation);
         if (metadataTitle != null) return metadataTitle.trim();
 
         StringBuilder sb = new StringBuilder();
         Identity authenticatedUser = client.getAuthenticatedUser();
-        for (Identity participant : conversation.getParticipants()) {
+        for (Identity participant : participants) {
             if (participant.equals(authenticatedUser)) continue;
-            String initials = conversation.getParticipants().size() > 2 ? getInitials(participant) : Util.getDisplayName(participant);
+            String initials = participants.size() > 2 ? getInitials(participant) : Util.getDisplayName(participant);
             if (sb.length() > 0) sb.append(", ");
             sb.append(initials);
         }
