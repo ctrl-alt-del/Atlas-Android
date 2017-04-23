@@ -96,6 +96,7 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
     private boolean mReadReceiptsEnabled = true;
 
     protected boolean mShouldShowAvatarInOneOnOneConversations;
+    protected boolean mShouldShowAvatarPresence = true;
 
     public AtlasMessagesAdapter(Context context, LayerClient layerClient, Picasso picasso) {
         mLayerClient = layerClient;
@@ -194,7 +195,24 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
      *                                                or not
      */
     public void setShouldShowAvatarInOneOnOneConversations(boolean shouldShowAvatarInOneOnOneConversations) {
-        this.mShouldShowAvatarInOneOnOneConversations = shouldShowAvatarInOneOnOneConversations;
+        mShouldShowAvatarInOneOnOneConversations = shouldShowAvatarInOneOnOneConversations;
+    }
+
+    /**
+     * @return If the Avatar for the other participant in a one on one conversation will be shown
+     * or not. Defaults to `true`.
+     */
+    public boolean getShouldShowAvatarPresence() {
+        return mShouldShowAvatarPresence;
+    }
+
+    /**
+     * @param shouldShowPresence Whether the Avatar for the other participant in a one on one
+     *                           conversation should be shown or not. Default is `true`.
+     */
+    public AtlasMessagesAdapter setShouldShowAvatarPresence(boolean shouldShowPresence) {
+        mShouldShowAvatarPresence = shouldShowPresence;
+        return this;
     }
 
     /**
@@ -280,7 +298,7 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
 
         CellType cellType = mCellTypesByViewType.get(viewType);
         int rootResId = cellType.mMe ? CellViewHolder.RESOURCE_ID_ME : CellViewHolder.RESOURCE_ID_THEM;
-        CellViewHolder rootViewHolder = new CellViewHolder(mLayoutInflater.inflate(rootResId, parent, false), mPicasso);
+        CellViewHolder rootViewHolder = new CellViewHolder(mLayoutInflater.inflate(rootResId, parent, false), mPicasso, mShouldShowAvatarPresence);
         rootViewHolder.mCellHolder = cellType.mCellFactory.createCellHolder(rootViewHolder.mCell, cellType.mMe, mLayoutInflater);
         rootViewHolder.mCellHolderSpecs = new AtlasCellFactory.CellHolderSpecs();
         return rootViewHolder;
@@ -698,7 +716,7 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         protected AtlasCellFactory.CellHolder mCellHolder;
         protected AtlasCellFactory.CellHolderSpecs mCellHolderSpecs;
 
-        public CellViewHolder(View itemView, Picasso picasso) {
+        public CellViewHolder(View itemView, Picasso picasso, boolean shouldShowAvatarPresence) {
             super(itemView);
             mUserName = (TextView) itemView.findViewById(R.id.sender);
             mTimeGroup = itemView.findViewById(R.id.time_group);
@@ -709,7 +727,10 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
             mReceipt = (TextView) itemView.findViewById(R.id.receipt);
 
             mAvatar = ((AtlasAvatar) itemView.findViewById(R.id.avatar));
-            if (mAvatar != null) mAvatar.init(picasso);
+            if (mAvatar != null)  {
+                mAvatar.init(picasso);
+                mAvatar.setShouldShowPresence(shouldShowAvatarPresence);
+            }
         }
     }
 

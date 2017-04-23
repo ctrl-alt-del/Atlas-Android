@@ -1,5 +1,26 @@
 # Atlas Android
 
+
+## 0.4.7
+
+### Major Changes
+  * Update to Layer Android SDK Version 0.23.13
+  * Add support for Presence
+
+## 0.4.6
+
+### Major Changes
+  * Update to Layer Android SDK Version 0.23.12
+  * Update Google Play Services to 10.2.0
+  
+## 0.4.5
+
+### Major Changes
+  * Update to Layer Android SDK Version 0.23.11
+  
+### Bug Fixes
+  * Fixing avatars in group conversations (#156)
+  
 ## 0.4.4
 
 ### Major Changes
