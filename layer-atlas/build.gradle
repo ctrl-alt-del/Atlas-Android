@@ -10,13 +10,15 @@ ext.artifactIdName = 'layer-atlas'
 group 'com.layer.atlas'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.3'
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionName = "${version}"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     lintOptions {
@@ -40,12 +42,12 @@ ext {
     org = "layerhq"
     repo = "Atlas-Android"
     groupFolder = "com/layer/atlas"
-    supportLibraryVersion = '24.2.1'
+    supportLibraryVersion = '25.3.1'
 }
 
 dependencies {
     // Layer SDK
-    compile ('com.layer.sdk:layer-sdk:0.23.13') {
+    compile ('com.layer.sdk:layer-sdk:0.23.17') {
         exclude group: 'com.google.firebase', module: 'firebase-messaging'
         exclude group: 'com.google.firebase', module: 'firebase-core'
     }
@@ -64,6 +66,14 @@ dependencies {
     compile "com.android.support:recyclerview-v7:${supportLibraryVersion}"
     compile "com.android.support:appcompat-v7:${supportLibraryVersion}"
     compile "com.android.support:design:${supportLibraryVersion}"
+
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+
+    // Espresso support
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
 
     compile(name: 'tenor-android-sdk', ext: 'aar') {
         transitive = true
