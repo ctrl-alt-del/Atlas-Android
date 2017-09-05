@@ -228,7 +228,9 @@ public class AtlasMessageComposer extends FrameLayout implements IKeyboardView {
             public void afterTextChanged(Editable s) {
                 sTextChanged = true;
                 if (mConversation == null || mConversation.isDeleted()) return;
-                if (s.length() > 0) {
+
+                String message = s.toString().trim();
+                if (message.length() > 0) {
                     mSendButton.setEnabled(isEnabled());
                     mConversation.send(LayerTypingIndicatorListener.TypingIndicator.STARTED);
                 } else {
