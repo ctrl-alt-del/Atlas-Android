@@ -60,6 +60,7 @@
 
     <string name="atlas_message_composer_hint">Message</string>
     <string name="atlas_message_composer_send_button">SEND</string>
+    <string name="attach_media">attach media</string>
 
     <string name="attachment_menu_gif">Gif</string>
 </resources>
