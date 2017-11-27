@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
-import com.layer.atlas.tenor.SmartGifsUtils;
 import com.layer.atlas.util.Log;
 import com.layer.atlas.util.Util;
 import com.layer.sdk.LayerClient;
@@ -69,7 +68,6 @@ public class TextCellFactory extends AtlasCellFactory<TextCellFactory.CellHolder
 
     @Override
     public void bindCellHolder(CellHolder cellHolder, final TextInfo parsed, Message message, CellHolderSpecs specs) {
-
         //Checking if the TextView is being recycled, replace the value in the map with the new message id
         if (mTextViewUriHashMap.containsKey(cellHolder.mTextView)) {
             mTextViewUriHashMap.put(cellHolder.mTextView, message.getId());
@@ -87,7 +85,6 @@ public class TextCellFactory extends AtlasCellFactory<TextCellFactory.CellHolder
                 cellHolder.mProgressBar.show();
             }
         }
-        SmartGifsUtils.update(textMessage, specs.position);
         cellHolder.mTextView.setText(textMessage);
         cellHolder.mTextView.setTag(parsed);
         cellHolder.mTextView.setOnLongClickListener(this);
