@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.layer.atlas;
+package com.layer.atlas.tenor;
 
 import android.app.Activity;
 import android.content.Context;
@@ -27,8 +27,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Editable;
-import android.text.TextWatcher;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -42,29 +44,52 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AttachmentSender;
 import com.layer.atlas.messagetypes.MessageSender;
 import com.layer.atlas.messagetypes.text.TextSender;
+import com.layer.atlas.tenor.adapters.GifAdapter;
+import com.layer.atlas.tenor.adapters.OnDismissPopupWindowListener;
+import com.layer.atlas.tenor.presenters.impl.GifPresenter;
+import com.layer.atlas.tenor.rvitem.ResultRVItem;
+import com.layer.atlas.tenor.threepartgif.GifSender;
+import com.layer.atlas.tenor.views.IKeyboardView;
 import com.layer.atlas.util.EditTextUtil;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
+import com.tenor.android.sdk.constants.StringConstant;
+import com.tenor.android.sdk.listeners.TextWatcherAdapter;
+import com.tenor.android.sdk.models.Result;
+import com.tenor.android.sdk.responses.BaseError;
+import com.tenor.android.sdk.responses.GifsResponse;
+import com.tenor.android.sdk.rvwidgets.AbstractRVItem;
+import com.tenor.android.sdk.rvwidgets.EndlessRVOnScrollListener;
+import com.tenor.android.sdk.utils.AbstractListUtils;
+import com.tenor.android.sdk.utils.AbstractLocaleUtils;
+import com.tenor.android.sdk.utils.AbstractViewUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class AtlasMessageComposer extends FrameLayout {
+import retrofit2.Call;
+
+public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
     private EditText mMessageEditText;
     private Button mSendButton;
     private ImageView mAttachButton;
+    private ImageView mOpenGifsRVButton;
 
     private LayerClient mLayerClient;
     private Conversation mConversation;
 
     private TextSender mTextSender;
+    private GifSender mGifSender;
     private ArrayList<AttachmentSender> mAttachmentSenders = new ArrayList<AttachmentSender>();
     private MessageSender.Callback mMessageSenderCallback;
 
     private PopupWindow mAttachmentMenu;
+    private RecyclerView mGifsRecyclerView;
 
     // styles
     private boolean mEnabled;
@@ -75,31 +100,118 @@ public class AtlasMessageComposer extends FrameLayout {
     private int mUnderlineColor;
     private int mCursorColor;
     private Drawable mAttachmentSendersBackground;
+    private GifPresenter mPresenter;
+    private String mNextPageId = "";
+    private GifAdapter<Context> mAdapter;
+    private static Call<GifsResponse> sSearchGifsCall;
+    private static boolean sTextChanged;
 
-    public AtlasMessageComposer(Context context) {
+
+    public TenorMessageComposer(Context context) {
         super(context);
         initAttachmentMenu(context, null, 0);
     }
 
-    public AtlasMessageComposer(Context context, AttributeSet attrs) {
+    public TenorMessageComposer(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public AtlasMessageComposer(Context context, AttributeSet attrs, int defStyle) {
+    public TenorMessageComposer(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         parseStyle(context, attrs, defStyle);
         initAttachmentMenu(context, attrs, defStyle);
     }
 
+    private void showGifSearchView() {
+        AbstractViewUtils.showView(mGifsRecyclerView);
+        mMessageEditText.setHint(R.string.tenor_sdk_search_hint);
+        mOpenGifsRVButton.setImageResource(R.drawable.ic_arrow_back_white_24dp_tinted);
+    }
+
+    private void hideGifSearchView() {
+        AbstractViewUtils.hideView(mGifsRecyclerView);
+        mMessageEditText.setHint(R.string.atlas_message_composer_hint);
+        mOpenGifsRVButton.setImageResource(R.drawable.ic_tenor_logo_tinted);
+    }
+
+    private void performGifSearch(Editable s) {
+
+        String str = s.toString().trim();
+        if (str.length() == 0) {
+            searchSmartOrTrendingGifs();
+            return;
+        }
+
+        if (mPresenter == null) {
+            return;
+        }
+
+        final boolean isAppend = !sTextChanged && !SmartGifsUtils.isMessageChanged();
+        if (!isAppend) {
+            mNextPageId = StringConstant.EMPTY;
+        }
+
+        if (sSearchGifsCall != null) {
+            sSearchGifsCall.cancel();
+        }
+        sSearchGifsCall = mPresenter.search(str, AbstractLocaleUtils.getCurrentLocaleName(getContext()),
+                24, mNextPageId, null, isAppend);
+    }
+
     /**
-     * Prepares this AtlasMessageComposer for use.
+     * Prepares this TenorMessageComposer for use.
      *
-     * @return this AtlasMessageComposer.
+     * @return this TenorMessageComposer.
      */
-    public AtlasMessageComposer init(LayerClient layerClient) {
-        LayoutInflater.from(getContext()).inflate(R.layout.atlas_message_composer, this);
+    public TenorMessageComposer init(LayerClient layerClient) {
+        LayoutInflater.from(getContext()).inflate(R.layout.tenor_message_composer, this);
 
         mLayerClient = layerClient;
+
+        mGifsRecyclerView = (RecyclerView) findViewById(R.id.tmc_rv_gifs);
+        mGifsRecyclerView.setFocusable(true);
+
+        mPresenter = new GifPresenter(this);
+        mAdapter = new GifAdapter<>(getContext()).setDismissPopupWindowListener(new OnDismissPopupWindowListener() {
+            @Override
+            public void dismiss() {
+                hideGifSearchView();
+            }
+        });
+
+        mGifsRecyclerView.setAdapter(mAdapter);
+
+        final StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.HORIZONTAL);
+        mGifsRecyclerView.setLayoutManager(layoutManager);
+
+        mGifsRecyclerView.addOnScrollListener(new EndlessRVOnScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int currentPage) {
+                if (mMessageEditText.getText().toString().trim().length() > 0) {
+                    performGifSearch(mMessageEditText.getText());
+                } else {
+                    searchSmartOrTrendingGifs();
+                }
+            }
+        });
+
+        mOpenGifsRVButton = (ImageView) findViewById(R.id.tmc_iv_open_gifs_rv);
+        mOpenGifsRVButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mGifsRecyclerView.getVisibility() == VISIBLE) {
+                    hideGifSearchView();
+                    return;
+                }
+
+                showGifSearchView();
+                if (mMessageEditText.getText().toString().trim().length() > 0) {
+                    performGifSearch(mMessageEditText.getText());
+                } else {
+                    searchSmartOrTrendingGifs();
+                }
+            }
+        });
 
         mAttachButton = (ImageView) findViewById(R.id.attachment);
         mAttachButton.setOnClickListener(new OnClickListener() {
@@ -111,19 +223,10 @@ public class AtlasMessageComposer extends FrameLayout {
         });
 
         mMessageEditText = (EditText) findViewById(R.id.message_edit_text);
-        mMessageEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
+        mMessageEditText.addTextChangedListener(new TextWatcherAdapter() {
             @Override
             public void afterTextChanged(Editable s) {
+                sTextChanged = true;
                 if (mConversation == null || mConversation.isDeleted()) return;
 
                 String message = s.toString().trim();
@@ -133,6 +236,10 @@ public class AtlasMessageComposer extends FrameLayout {
                 } else {
                     mSendButton.setEnabled(false);
                     mConversation.send(LayerTypingIndicatorListener.TypingIndicator.FINISHED);
+                }
+
+                if (mGifsRecyclerView.getVisibility() == View.VISIBLE) {
+                    performGifSearch(s);
                 }
             }
         });
@@ -153,11 +260,12 @@ public class AtlasMessageComposer extends FrameLayout {
      * Sets the Conversation used for sending Messages.
      *
      * @param conversation the Conversation used for sending Messages.
-     * @return This AtlasMessageComposer.
+     * @return This TenorMessageComposer.
      */
-    public AtlasMessageComposer setConversation(Conversation conversation) {
+    public TenorMessageComposer setConversation(Conversation conversation) {
         mConversation = conversation;
         if (mTextSender != null) mTextSender.setConversation(conversation);
+        if (mGifSender != null) mGifSender.setConversation(conversation);
         for (AttachmentSender sender : mAttachmentSenders) {
             sender.setConversation(conversation);
         }
@@ -168,9 +276,9 @@ public class AtlasMessageComposer extends FrameLayout {
      * Sets a listener for receiving the message EditText focus change callbacks.
      *
      * @param listener Listener for receiving the message EditText focus change callbacks.
-     * @return This AtlasMessageComposer.
+     * @return This TenorMessageComposer.
      */
-    public AtlasMessageComposer setOnMessageEditTextFocusChangeListener(OnFocusChangeListener listener) {
+    public TenorMessageComposer setOnMessageEditTextFocusChangeListener(OnFocusChangeListener listener) {
         mMessageEditText.setOnFocusChangeListener(listener);
         return this;
     }
@@ -179,9 +287,9 @@ public class AtlasMessageComposer extends FrameLayout {
      * Sets the TextSender used for sending composed text messages.
      *
      * @param textSender TextSender used for sending composed text messages.
-     * @return This AtlasMessageComposer.
+     * @return This TenorMessageComposer.
      */
-    public AtlasMessageComposer setTextSender(TextSender textSender) {
+    public TenorMessageComposer setTextSender(TextSender textSender) {
         mTextSender = textSender;
         mTextSender.init(this.getContext().getApplicationContext(), mLayerClient);
         mTextSender.setConversation(mConversation);
@@ -190,12 +298,27 @@ public class AtlasMessageComposer extends FrameLayout {
     }
 
     /**
-     * Adds AttachmentSenders to this AtlasMessageComposer's attachment menu.
+     * Sets the GifSender used for sending composed gif messages.
      *
-     * @param senders AttachmentSenders to add to this AtlasMessageComposer's attachment menu.
-     * @return This AtlasMessageComposer.
+     * @param gifSender GifSender used for sending composed gif messages.
+     * @return This TenorMessageComposer.
      */
-    public AtlasMessageComposer addAttachmentSenders(AttachmentSender... senders) {
+    public TenorMessageComposer setGifSender(GifSender gifSender) {
+        mGifSender = gifSender;
+        mGifSender.init(this.getContext().getApplicationContext(), mLayerClient);
+        mGifSender.setConversation(mConversation);
+        if (mMessageSenderCallback != null) mGifSender.setCallback(mMessageSenderCallback);
+        mAdapter.setGifSender(mGifSender);
+        return this;
+    }
+
+    /**
+     * Adds AttachmentSenders to this TenorMessageComposer's attachment menu.
+     *
+     * @param senders AttachmentSenders to add to this TenorMessageComposer's attachment menu.
+     * @return This TenorMessageComposer.
+     */
+    public TenorMessageComposer addAttachmentSenders(AttachmentSender... senders) {
         for (AttachmentSender sender : senders) {
             if (sender.getTitle() == null && sender.getIcon() == null) {
                 throw new NullPointerException("Attachment handlers must have at least a title or icon specified.");
@@ -215,9 +338,9 @@ public class AtlasMessageComposer extends FrameLayout {
      * callbacks already set on MessageSenders.
      *
      * @param callback Callback to receive MessageSender events.
-     * @return This AtlasMessageComposer.
+     * @return This TenorMessageComposer.
      */
-    public AtlasMessageComposer setMessageSenderCallback(MessageSender.Callback callback) {
+    public TenorMessageComposer setMessageSenderCallback(MessageSender.Callback callback) {
         mMessageSenderCallback = callback;
         if (mMessageSenderCallback == null) return this;
         if (mTextSender != null) mTextSender.setCallback(callback);
@@ -227,7 +350,7 @@ public class AtlasMessageComposer extends FrameLayout {
         return this;
     }
 
-    public AtlasMessageComposer setTypeface(Typeface typeface) {
+    public TenorMessageComposer setTypeface(Typeface typeface) {
         this.mTypeFace = typeface;
         applyTypeface();
         return this;
@@ -241,9 +364,9 @@ public class AtlasMessageComposer extends FrameLayout {
      * @param requestCode Request code from the Activity's onActivityResult.
      * @param resultCode  Result code from the Activity's onActivityResult.
      * @param data        Intent data from the Activity's onActivityResult.
-     * @return this AtlasMessageComposer.
+     * @return this TenorMessageComposer.
      */
-    public AtlasMessageComposer onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+    public TenorMessageComposer onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
         for (AttachmentSender sender : mAttachmentSenders) {
             sender.onActivityResult(activity, requestCode, resultCode, data);
         }
@@ -309,6 +432,33 @@ public class AtlasMessageComposer extends FrameLayout {
         mMessageEditText.setTypeface(mTypeFace, mTextStyle);
     }
 
+    private void searchSmartOrTrendingGifs() {
+        if (mPresenter == null) {
+            return;
+        }
+
+        /*
+         * Don't append new gifs to the existing ones if:
+         * (1) user type in new character
+         * (2) user receive new message
+         */
+        final boolean isAppend = !sTextChanged && !SmartGifsUtils.isMessageChanged();
+        if (!isAppend) {
+            mNextPageId = StringConstant.EMPTY;
+        }
+
+        if (sSearchGifsCall != null) {
+            sSearchGifsCall.cancel();
+        }
+
+        if (!TextUtils.isEmpty(SmartGifsUtils.getSearchQuery())) {
+            sSearchGifsCall = mPresenter.search(SmartGifsUtils.getSearchQuery(),
+                    AbstractLocaleUtils.getCurrentLocaleName(getContext()), 24, mNextPageId, null, isAppend);
+        } else {
+            sSearchGifsCall = mPresenter.getTrending(24, mNextPageId, null, isAppend);
+        }
+    }
+
     private void addAttachmentMenuItem(AttachmentSender sender) {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         LinearLayout menuLayout = (LinearLayout) mAttachmentMenu.getContentView();
@@ -319,7 +469,11 @@ public class AtlasMessageComposer extends FrameLayout {
         menuItem.setOnClickListener(new OnClickListener() {
             public void onClick(final View v) {
                 mAttachmentMenu.dismiss();
-                ((AttachmentSender) v.getTag()).requestSend();
+                if (v.getTag() instanceof GifSender) {
+                    searchSmartOrTrendingGifs();
+                } else {
+                    ((AttachmentSender) v.getTag()).requestSend();
+                }
             }
         });
         if (sender.getIcon() != null) {
@@ -375,6 +529,44 @@ public class AtlasMessageComposer extends FrameLayout {
             if (parcelable == null) continue;
             sender.onRestoreInstanceState(parcelable);
         }
+    }
+
+    @Override
+    public void onReceiveSearchResultsSucceed(GifsResponse response, boolean isAppend) {
+        sTextChanged = false;
+        SmartGifsUtils.resetMessageChanged();
+        List<AbstractRVItem> items = new ArrayList<>();
+
+        for (Result result : AbstractListUtils.shuffle(response.getResults())) {
+            items.add(new ResultRVItem(GifAdapter.TYPE_GIF_ITEM, result));
+        }
+        mAdapter.insert(items, isAppend);
+        mNextPageId = response.getNext();
+    }
+
+    @Override
+    public void onReceiveSearchResultsFailed(BaseError error) {
+        sTextChanged = false;
+        SmartGifsUtils.resetMessageChanged();
+    }
+
+    @Override
+    public void onReceiveTrendingSucceeded(List<Result> list, String nextPageId, boolean isAppend) {
+        sTextChanged = false;
+        SmartGifsUtils.resetMessageChanged();
+        List<AbstractRVItem> items = new ArrayList<>();
+
+        for (Result result : AbstractListUtils.shuffle(list)) {
+            items.add(new ResultRVItem(GifAdapter.TYPE_GIF_ITEM, result));
+        }
+        mAdapter.insert(items, isAppend);
+        mNextPageId = nextPageId;
+    }
+
+    @Override
+    public void onReceiveTrendingFailed(BaseError error) {
+        sTextChanged = false;
+        SmartGifsUtils.resetMessageChanged();
     }
 
     /**
