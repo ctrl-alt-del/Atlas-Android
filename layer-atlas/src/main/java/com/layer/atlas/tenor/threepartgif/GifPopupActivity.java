@@ -3,28 +3,25 @@ package com.layer.atlas.tenor.threepartgif;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.widget.ImageView;
 
-import com.bumptech.glide.GifRequestBuilder;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.layer.atlas.R;
-import com.layer.atlas.tenor.GlideUtils;
 import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerProgressListener;
 import com.layer.sdk.messaging.MessagePart;
-import com.tenor.android.sdk.listeners.OnImageLoadedListener;
-import com.tenor.android.sdk.models.GlidePayload;
 
 /**
  * GifPopupActivity implements a ful resolution gif viewer Activity.  This Activity
  * registers with the LayerClient as a LayerProgressListener to monitor progress.
  */
-public class GifPopupActivity extends Activity implements LayerProgressListener.BackgroundThread.Weak, SubsamplingScaleImageView.OnImageEventListener {
+public abstract class GifPopupActivity extends Activity implements LayerProgressListener.BackgroundThread.Weak, SubsamplingScaleImageView.OnImageEventListener {
     private static LayerClient sLayerClient;
+    private static GifLoaderClient sGifLoaderClient;
 
     private ImageView mImageView;
     private ContentLoadingProgressBar mProgressBar;
@@ -44,41 +41,30 @@ public class GifPopupActivity extends Activity implements LayerProgressListener.
         mMessagePartFullId = intent.getStringExtra("fullId");
 
         mProgressBar.show();
-        GlidePayload payload = new GlidePayload(mImageView, mMessagePartFullId)
-                .setListener(new OnImageLoadedListener() {
-                    @Override
-                    public void onImageLoadingFinished() {
-                        mProgressBar.hide();
-                    }
-
-                    @Override
-                    public void onImageLoadingFailed() {
-                        mProgressBar.hide();
-                    }
-                });
-
-        GifRequestBuilder<String> requestBuilder = Glide.with(this)
-                .load(payload.getPath())
-                .asGif()
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE);
-
-        GlideUtils.load(requestBuilder, payload);
+        if (sGifLoaderClient != null) {
+            sGifLoaderClient.load(mImageView, mMessagePartFullId, null);
+        }
     }
+
+    public abstract void load(@NonNull ImageView imageView, @Nullable String messagePartFullId);
 
     @Override
     protected void onResume() {
         super.onResume();
         sLayerClient.registerProgressListener(null, this);
+        sGifLoaderClient.resume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         sLayerClient.unregisterProgressListener(null, this);
+        sGifLoaderClient.pause();
     }
 
-    public static void init(LayerClient layerClient) {
+    public static void init(LayerClient layerClient, GifLoaderClient gifLoaderClient) {
         sLayerClient = layerClient;
+        sGifLoaderClient = gifLoaderClient;
     }
 
     @Override
@@ -134,5 +120,4 @@ public class GifPopupActivity extends Activity implements LayerProgressListener.
         if (!messagePart.getId().equals(mMessagePartFullId)) return;
         if (Log.isLoggable(Log.ERROR)) Log.e(e.getMessage(), e);
     }
-
 }

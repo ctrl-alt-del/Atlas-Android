@@ -2,43 +2,47 @@ package com.layer.atlas.tenor.adapters;
 
 import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.layer.atlas.R;
-import com.layer.atlas.tenor.rvholders.GifItemRVVH;
+import com.layer.atlas.tenor.rvholders.GifSelectionViewHolder;
 import com.layer.atlas.tenor.rvitem.ResultRVItem;
+import com.layer.atlas.tenor.threepartgif.GifLoaderClient;
 import com.layer.atlas.tenor.threepartgif.GifSender;
-import com.tenor.android.sdk.models.Result;
-import com.tenor.android.sdk.rvwidgets.AbstractRVItem;
-import com.tenor.android.sdk.rvwidgets.ListRVAdapter;
-import com.tenor.android.sdk.rvwidgets.StaggeredGridLayoutItemViewHolder;
-import com.tenor.android.sdk.utils.AbstractListUtils;
+import com.tenor.android.core.model.impl.Result;
+import com.tenor.android.core.util.AbstractListUtils;
+import com.tenor.android.core.view.IBaseView;
+import com.tenor.android.core.widget.adapter.AbstractRVItem;
+import com.tenor.android.core.widget.adapter.ListRVAdapter;
+import com.tenor.android.core.widget.viewholder.StaggeredGridLayoutItemViewHolder;
 
 import java.util.List;
 import java.util.Map;
 
-public class GifAdapter<CTX> extends ListRVAdapter<CTX, AbstractRVItem, StaggeredGridLayoutItemViewHolder<CTX>> {
+public class GifAdapter<CTX extends IBaseView> extends ListRVAdapter<CTX, AbstractRVItem, StaggeredGridLayoutItemViewHolder<CTX>> {
 
     private static int ITEM_HEIGHT;
     public final static int TYPE_GIF_ITEM = 0;
     private Map<String, Integer> mWidths;
     private GifSender mGifSender;
+    private final GifLoaderClient mGifLoaderClient;
+    private final GifLoaderClient.Callback mGifLoaderClientCallback;
     private OnDismissPopupWindowListener mListener;
 
-    public GifAdapter(CTX context) {
+    public GifAdapter(CTX context, GifLoaderClient gifLoaderClient, GifLoaderClient.Callback callback) {
         super(context);
+        mGifLoaderClient = gifLoaderClient;
+        mGifLoaderClientCallback = callback;
         mWidths = new ArrayMap<>();
         if (hasContext()) {
             ITEM_HEIGHT = (int) getContext().getResources().getDimension(R.dimen.tenor_gif_adapter_height);
         }
     }
 
-    public GifAdapter<CTX> setDismissPopupWindowListener(@Nullable final OnDismissPopupWindowListener listener) {
+    public void setDismissPopupWindowListener(@Nullable final OnDismissPopupWindowListener listener) {
         mListener = listener;
-        return this;
     }
 
     @Override
@@ -48,8 +52,9 @@ public class GifAdapter<CTX> extends ListRVAdapter<CTX, AbstractRVItem, Staggere
         View view;
         switch (viewType) {
             default:
-                view = inflater.inflate(R.layout.tenor_gif_item_rvvh, null);
-                return new GifItemRVVH<>(view, getCTX(), mGifSender, mListener);
+                view = inflater.inflate(R.layout.tenor_gif_item, null);
+                return new GifSelectionViewHolder<>(view, getRef(),
+                        mGifLoaderClient, mGifSender, mListener);
         }
     }
 
@@ -60,8 +65,8 @@ public class GifAdapter<CTX> extends ListRVAdapter<CTX, AbstractRVItem, Staggere
     @Override
     public void onBindViewHolder(final StaggeredGridLayoutItemViewHolder<CTX> viewHolder, int position) {
 
-        if (viewHolder instanceof GifItemRVVH) {
-            final GifItemRVVH holder = (GifItemRVVH) viewHolder;
+        if (viewHolder instanceof GifSelectionViewHolder) {
+            final GifSelectionViewHolder holder = (GifSelectionViewHolder) viewHolder;
 
             if (getList().get(position).getType() != TYPE_GIF_ITEM) {
                 return;
@@ -69,7 +74,7 @@ public class GifAdapter<CTX> extends ListRVAdapter<CTX, AbstractRVItem, Staggere
 
             final ResultRVItem resultRVItem = (ResultRVItem) getList().get(position);
 
-            holder.setImage(resultRVItem.getResult());
+            holder.setImage(resultRVItem.getResult(), mGifLoaderClientCallback);
             if (mWidths.containsKey(resultRVItem.getId())) {
                 holder.setParams(mWidths.get(resultRVItem.getId()), ITEM_HEIGHT);
             }

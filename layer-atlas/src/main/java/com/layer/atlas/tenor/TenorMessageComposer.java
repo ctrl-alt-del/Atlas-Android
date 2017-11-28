@@ -25,12 +25,14 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -50,29 +52,24 @@ import com.layer.atlas.messagetypes.MessageSender;
 import com.layer.atlas.messagetypes.text.TextSender;
 import com.layer.atlas.tenor.adapters.GifAdapter;
 import com.layer.atlas.tenor.adapters.OnDismissPopupWindowListener;
-import com.layer.atlas.tenor.presenters.impl.GifPresenter;
 import com.layer.atlas.tenor.rvitem.ResultRVItem;
+import com.layer.atlas.tenor.threepartgif.GifLoaderClient;
 import com.layer.atlas.tenor.threepartgif.GifSender;
 import com.layer.atlas.tenor.views.IKeyboardView;
 import com.layer.atlas.util.EditTextUtil;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
-import com.tenor.android.sdk.constants.StringConstant;
-import com.tenor.android.sdk.listeners.TextWatcherAdapter;
-import com.tenor.android.sdk.models.Result;
-import com.tenor.android.sdk.responses.BaseError;
-import com.tenor.android.sdk.responses.GifsResponse;
-import com.tenor.android.sdk.rvwidgets.AbstractRVItem;
-import com.tenor.android.sdk.rvwidgets.EndlessRVOnScrollListener;
-import com.tenor.android.sdk.utils.AbstractListUtils;
-import com.tenor.android.sdk.utils.AbstractLocaleUtils;
-import com.tenor.android.sdk.utils.AbstractViewUtils;
+import com.tenor.android.core.constant.StringConstant;
+import com.tenor.android.core.model.impl.Result;
+import com.tenor.android.core.response.BaseError;
+import com.tenor.android.core.response.impl.GifsResponse;
+import com.tenor.android.core.util.AbstractLocaleUtils;
+import com.tenor.android.core.widget.adapter.AbstractRVItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
 
 public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
     private EditText mMessageEditText;
@@ -81,6 +78,7 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
     private ImageView mOpenGifsRVButton;
 
     private LayerClient mLayerClient;
+    private GifLoaderClient mGifLoaderClient;
     private Conversation mConversation;
 
     private TextSender mTextSender;
@@ -100,10 +98,9 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
     private int mUnderlineColor;
     private int mCursorColor;
     private Drawable mAttachmentSendersBackground;
-    private GifPresenter mPresenter;
+    private IKeyboardView.Presenter mPresenter;
     private String mNextPageId = "";
-    private GifAdapter<Context> mAdapter;
-    private static Call<GifsResponse> sSearchGifsCall;
+    private GifAdapter<TenorMessageComposer> mAdapter;
     private static boolean sTextChanged;
 
 
@@ -123,13 +120,13 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
     }
 
     private void showGifSearchView() {
-        AbstractViewUtils.showView(mGifsRecyclerView);
+        mGifsRecyclerView.setVisibility(View.VISIBLE);
         mMessageEditText.setHint(R.string.tenor_sdk_search_hint);
         mOpenGifsRVButton.setImageResource(R.drawable.ic_arrow_back_white_24dp_tinted);
     }
 
     private void hideGifSearchView() {
-        AbstractViewUtils.hideView(mGifsRecyclerView);
+        mGifsRecyclerView.setVisibility(View.GONE);
         mMessageEditText.setHint(R.string.atlas_message_composer_hint);
         mOpenGifsRVButton.setImageResource(R.drawable.ic_tenor_logo_tinted);
     }
@@ -151,11 +148,12 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
             mNextPageId = StringConstant.EMPTY;
         }
 
-        if (sSearchGifsCall != null) {
-            sSearchGifsCall.cancel();
-        }
-        sSearchGifsCall = mPresenter.search(str, AbstractLocaleUtils.getCurrentLocaleName(getContext()),
+        mPresenter.search(str, AbstractLocaleUtils.getCurrentLocaleName(getContext()),
                 24, mNextPageId, null, isAppend);
+    }
+
+    public <P extends IKeyboardView.Presenter> void injectPresenter(@NonNull P presenter) {
+        mPresenter = presenter;
     }
 
     /**
@@ -163,16 +161,28 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
      *
      * @return this TenorMessageComposer.
      */
-    public TenorMessageComposer init(LayerClient layerClient) {
+    public TenorMessageComposer init(LayerClient layerClient, GifLoaderClient gifLoaderClient) {
         LayoutInflater.from(getContext()).inflate(R.layout.tenor_message_composer, this);
 
         mLayerClient = layerClient;
+        mGifLoaderClient = gifLoaderClient;
 
         mGifsRecyclerView = (RecyclerView) findViewById(R.id.tmc_rv_gifs);
         mGifsRecyclerView.setFocusable(true);
 
-        mPresenter = new GifPresenter(this);
-        mAdapter = new GifAdapter<>(getContext()).setDismissPopupWindowListener(new OnDismissPopupWindowListener() {
+        mAdapter = new GifAdapter<>(this, mGifLoaderClient,
+                new GifLoaderClient.Callback() {
+                    @Override
+                    public <V extends ImageView> void success(V view) {
+
+                    }
+
+                    @Override
+                    public void failure() {
+
+                    }
+                });
+        mAdapter.setDismissPopupWindowListener(new OnDismissPopupWindowListener() {
             @Override
             public void dismiss() {
                 hideGifSearchView();
@@ -184,16 +194,16 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
         final StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.HORIZONTAL);
         mGifsRecyclerView.setLayoutManager(layoutManager);
 
-        mGifsRecyclerView.addOnScrollListener(new EndlessRVOnScrollListener(layoutManager) {
-            @Override
-            public void onLoadMore(int currentPage) {
-                if (mMessageEditText.getText().toString().trim().length() > 0) {
-                    performGifSearch(mMessageEditText.getText());
-                } else {
-                    searchSmartOrTrendingGifs();
-                }
-            }
-        });
+//        mGifsRecyclerView.addOnScrollListener(new EndlessRVOnScrollListener(layoutManager) {
+//            @Override
+//            public void onLoadMore(int currentPage) {
+//                if (mMessageEditText.getText().toString().trim().length() > 0) {
+//                    performGifSearch(mMessageEditText.getText());
+//                } else {
+//                    searchSmartOrTrendingGifs();
+//                }
+//            }
+//        });
 
         mOpenGifsRVButton = (ImageView) findViewById(R.id.tmc_iv_open_gifs_rv);
         mOpenGifsRVButton.setOnClickListener(new OnClickListener() {
@@ -223,7 +233,17 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
         });
 
         mMessageEditText = (EditText) findViewById(R.id.message_edit_text);
-        mMessageEditText.addTextChangedListener(new TextWatcherAdapter() {
+        mMessageEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
             @Override
             public void afterTextChanged(Editable s) {
                 sTextChanged = true;
@@ -447,15 +467,11 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
             mNextPageId = StringConstant.EMPTY;
         }
 
-        if (sSearchGifsCall != null) {
-            sSearchGifsCall.cancel();
-        }
-
         if (!TextUtils.isEmpty(SmartGifsUtils.getSearchQuery())) {
-            sSearchGifsCall = mPresenter.search(SmartGifsUtils.getSearchQuery(),
+            mPresenter.search(SmartGifsUtils.getSearchQuery(),
                     AbstractLocaleUtils.getCurrentLocaleName(getContext()), 24, mNextPageId, null, isAppend);
         } else {
-            sSearchGifsCall = mPresenter.getTrending(24, mNextPageId, null, isAppend);
+            mPresenter.getTrending(24, mNextPageId, null, isAppend);
         }
     }
 
@@ -532,12 +548,12 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
     }
 
     @Override
-    public void onReceiveSearchResultsSucceed(GifsResponse response, boolean isAppend) {
+    public void onReceiveSearchResultsSucceed(@NonNull GifsResponse response, boolean isAppend) {
         sTextChanged = false;
         SmartGifsUtils.resetMessageChanged();
         List<AbstractRVItem> items = new ArrayList<>();
 
-        for (Result result : AbstractListUtils.shuffle(response.getResults())) {
+        for (Result result : response.getResults()) {
             items.add(new ResultRVItem(GifAdapter.TYPE_GIF_ITEM, result));
         }
         mAdapter.insert(items, isAppend);
@@ -545,18 +561,18 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
     }
 
     @Override
-    public void onReceiveSearchResultsFailed(BaseError error) {
+    public void onReceiveSearchResultsFailed(@NonNull BaseError error) {
         sTextChanged = false;
         SmartGifsUtils.resetMessageChanged();
     }
 
     @Override
-    public void onReceiveTrendingSucceeded(List<Result> list, String nextPageId, boolean isAppend) {
+    public void onReceiveTrendingSucceeded(@NonNull List<Result> list, @NonNull String nextPageId, boolean isAppend) {
         sTextChanged = false;
         SmartGifsUtils.resetMessageChanged();
         List<AbstractRVItem> items = new ArrayList<>();
 
-        for (Result result : AbstractListUtils.shuffle(list)) {
+        for (Result result : list) {
             items.add(new ResultRVItem(GifAdapter.TYPE_GIF_ITEM, result));
         }
         mAdapter.insert(items, isAppend);

@@ -1,18 +1,23 @@
 package com.layer.atlas.tenor.threepartgif;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
-import com.tenor.android.sdk.constants.StringConstant;
-import com.tenor.android.sdk.models.Media;
-import com.tenor.android.sdk.models.Result;
-import com.tenor.android.sdk.utils.AbstractGifUtils;
-import com.tenor.android.sdk.utils.AbstractGsonUtils;
+import com.tenor.android.core.constant.MediaCollectionFormat;
+import com.tenor.android.core.constant.StringConstant;
+import com.tenor.android.core.model.impl.Media;
+import com.tenor.android.core.model.impl.MediaCollection;
+import com.tenor.android.core.model.impl.Result;
+import com.tenor.android.core.util.AbstractGsonUtils;
+import com.tenor.android.core.util.AbstractListUtils;
 
 import java.io.IOException;
+import java.util.List;
 
 public class ThreePartGifUtils {
 
@@ -53,24 +58,24 @@ public class ThreePartGifUtils {
         if (result == null) throw new IllegalArgumentException("Null result");
 
         MessagePart full = null;
-        final String gifUrl = AbstractGifUtils.getGifUrl(result);
+        final String gifUrl = getGif(result).getUrl();
         if (!TextUtils.isEmpty(gifUrl)) {
             full = client.newMessagePart(MIME_TYPE_GIF, gifUrl.getBytes());
         }
 
         MessagePart preview = null;
-        final String tinyGifUrl = AbstractGifUtils.getTinyGifUrl(result);
+        final String tinyGifUrl = getTinyGif(result).getUrl();
         if (!TextUtils.isEmpty(tinyGifUrl)) {
             preview = client.newMessagePart(MIME_TYPE_GIF_PREVIEW, tinyGifUrl.getBytes());
         }
 
-        final Media gif = AbstractGifUtils.getMedia(result, AbstractGifUtils.MEDIA_GIF);
+        final Media gif = getGif(result);
         MessagePart info = null;
         if (gif != null) {
             GifInfo gifInfo = new GifInfo();
             gifInfo.contentId = result.getId();
-            gifInfo.previewPartId = !TextUtils.isEmpty(tinyGifUrl) ? tinyGifUrl : StringConstant.EMPTY;
-            gifInfo.fullPartId = !TextUtils.isEmpty(gifUrl) ? gifUrl : StringConstant.EMPTY;
+            gifInfo.previewPartId = StringConstant.getOrEmpty(tinyGifUrl);
+            gifInfo.fullPartId = StringConstant.getOrEmpty(gifUrl);
             gifInfo.width = gif.getWidth();
             gifInfo.height = gif.getHeight();
             info = client.newMessagePart(MIME_TYPE_GIF_INFO, AbstractGsonUtils.getInstance().toJson(gifInfo).getBytes());
@@ -81,5 +86,21 @@ public class ThreePartGifUtils {
         parts[PART_INDEX_PREVIEW] = preview;
         parts[PART_INDEX_INFO] = info;
         return client.newMessage(parts);
+    }
+
+    public static Media getGif(Result result) {
+        List<MediaCollection> mediaCollections = result.getMedias();
+        if (AbstractListUtils.isEmpty(mediaCollections)) {
+            return null;
+        }
+        return mediaCollections.get(0).get(MediaCollectionFormat.GIF);
+    }
+
+    public static Media getTinyGif(Result result) {
+        List<MediaCollection> mediaCollections = result.getMedias();
+        if (AbstractListUtils.isEmpty(mediaCollections)) {
+            return null;
+        }
+        return mediaCollections.get(0).get(MediaCollectionFormat.GIF_TINY);
     }
 }

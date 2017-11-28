@@ -2,8 +2,8 @@ package com.layer.atlas.tenor.rvitem;
 
 import android.support.annotation.NonNull;
 
-import com.tenor.android.sdk.models.Result;
-import com.tenor.android.sdk.rvwidgets.AbstractRVItem;
+import com.tenor.android.core.model.impl.Result;
+import com.tenor.android.core.widget.adapter.AbstractRVItem;
 
 public class ResultRVItem extends AbstractRVItem {
 

@@ -11,10 +11,10 @@ import com.layer.atlas.util.Util;
 import com.layer.sdk.messaging.Identity;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.PushNotificationPayload;
-import com.tenor.android.sdk.constants.StringConstant;
-import com.tenor.android.sdk.models.Result;
-import com.tenor.android.sdk.networks.ApiClient;
-import com.tenor.android.sdk.utils.AbstractWeakReferenceUtils;
+import com.tenor.android.core.constant.StringConstant;
+import com.tenor.android.core.model.impl.Result;
+import com.tenor.android.core.network.ApiClient;
+import com.tenor.android.core.util.AbstractWeakReferenceUtils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -44,7 +44,7 @@ public class GifSender extends AttachmentSender {
         return false;
     }
 
-    public boolean send(@Nullable final Result result) {
+    public boolean send(@Nullable Result result) {
         if (result == null) {
             return false;
         }
@@ -74,7 +74,7 @@ public class GifSender extends AttachmentSender {
         message.getOptions().defaultPushNotificationPayload(payload);
 
         // register share to improve the accuracy of search results in the future
-        ApiClient.registerShare(mActivity.get(), result.getId());
+        // ApiClient.registerShare(mActivity.get(), result.getId());
 
         return send(message);
     }

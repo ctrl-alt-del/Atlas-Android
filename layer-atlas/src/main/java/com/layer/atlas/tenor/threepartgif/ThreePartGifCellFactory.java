@@ -1,7 +1,7 @@
 package com.layer.atlas.tenor.threepartgif;
 
-import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -10,14 +10,11 @@ import android.view.ViewGroup;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
-import com.layer.atlas.tenor.GlideUtils;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
-import com.tenor.android.sdk.utils.AbstractGsonUtils;
-import com.tenor.android.sdk.utils.AbstractWeakReferenceUtils;
+import com.tenor.android.core.util.AbstractGsonUtils;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -26,13 +23,14 @@ import java.util.List;
  */
 public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, GifInfo> {
 
-    private final WeakReference<Activity> mActivity;
     private final LayerClient mLayerClient;
+    private final GifLoaderClient mGifLoaderClient;
+    private GifCellHolder.OnLoadGifCallback mOnLoadGifCallback;
 
-    public ThreePartGifCellFactory(Activity activity, LayerClient layerClient) {
+    public ThreePartGifCellFactory(LayerClient layerClient, GifLoaderClient gifLoaderClient) {
         super(256 * 1024);
-        mActivity = new WeakReference<>(activity);
         mLayerClient = layerClient;
+        mGifLoaderClient = gifLoaderClient;
     }
 
     @Override
@@ -43,7 +41,7 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
     @Override
     public GifCellHolder createCellHolder(ViewGroup cellView, boolean isMe, LayoutInflater layoutInflater) {
         return new GifCellHolder(layoutInflater.inflate(R.layout.atlas_message_item_cell_image, cellView, true),
-                mLayerClient, mActivity);
+                mLayerClient, mGifLoaderClient);
     }
 
     @Override
@@ -57,22 +55,22 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
         if (info == null) {
             return;
         }
-        cellHolder.render(info, message);
+        cellHolder.render(info, message, mOnLoadGifCallback);
+    }
+
+    public void setGifCellHolderOnLoadGifCallback(@NonNull GifCellHolder.OnLoadGifCallback callback) {
+        mOnLoadGifCallback = callback;
     }
 
     @Override
     public void onScrollStateChanged(int newState) {
         switch (newState) {
             case RecyclerView.SCROLL_STATE_DRAGGING:
-                if (AbstractWeakReferenceUtils.isAlive(mActivity)) {
-                    GlideUtils.pauseRequests(mActivity.get());
-                }
+                mGifLoaderClient.pause();
                 break;
             case RecyclerView.SCROLL_STATE_IDLE:
             case RecyclerView.SCROLL_STATE_SETTLING:
-                if (AbstractWeakReferenceUtils.isAlive(mActivity)) {
-                    GlideUtils.resumeRequests(mActivity.get());
-                }
+                mGifLoaderClient.resume();
                 break;
         }
     }

@@ -1,6 +1,7 @@
 package com.layer.atlas.adapters;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -279,15 +280,21 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
         return GenericCellFactory.getPreview(context, message);
     }
 
+    protected void addDefaultCellFactories(@NonNull AtlasCellFactory... factories) {
+        getDefaultCellFactories().addAll(Arrays.asList(factories));
+    }
+
     private Set<AtlasCellFactory> getDefaultCellFactories() {
         if (mDefaultCellFactories == null) {
             mDefaultCellFactories = new LinkedHashSet<>();
         }
+
         if (mDefaultCellFactories.isEmpty()) {
-            mDefaultCellFactories.addAll(Arrays.asList(new TextCellFactory(),
+            addDefaultCellFactories(
+                    new TextCellFactory(),
                     new ThreePartImageCellFactory(mLayerClient, mPicasso),
                     new LocationCellFactory(mPicasso),
-                    new SinglePartImageCellFactory(mLayerClient, mPicasso)));
+                    new SinglePartImageCellFactory(mLayerClient, mPicasso));
         }
 
         return mDefaultCellFactories;
@@ -377,7 +384,7 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
     // Inner classes
     //==============================================================================================
 
-    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
+    protected static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         // Layout to inflate
         public final static int RESOURCE_ID = R.layout.atlas_conversation_item;
 
@@ -391,7 +398,7 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
         protected Conversation mConversation;
         protected OnClickListener mClickListener;
 
-        public ViewHolder(View itemView, ConversationStyle conversationStyle,  boolean shouldShowAvatarPresence) {
+        public ViewHolder(View itemView, ConversationStyle conversationStyle, boolean shouldShowAvatarPresence) {
             super(itemView);
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
