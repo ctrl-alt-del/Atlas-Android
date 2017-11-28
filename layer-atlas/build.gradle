@@ -42,7 +42,7 @@ ext {
     org = "layerhq"
     repo = "Atlas-Android"
     groupFolder = "com/layer/atlas"
-    supportLibraryVersion = '25.3.1'
+
 }
 
 dependencies {
@@ -80,8 +80,6 @@ dependencies {
     }
 
     compile 'com.android.support:support-v4:24.2.1'
-    compile 'com.android.support:percent:24.2.1'
-    compile 'com.android.support:cardview-v7:24.2.1'
 }
 
 def sdkPom() {

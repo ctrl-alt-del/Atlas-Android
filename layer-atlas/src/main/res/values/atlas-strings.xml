@@ -63,5 +63,5 @@
     <string name="attach_media">attach media</string>
 
     <string name="attachment_menu_gif">Gif</string>
-    <string name="tenor_sdk_search_hint">Search Tenor for GIFs</string>
+    <string name="tenor_search_hint">Search Tenor for GIFs</string>
 </resources>

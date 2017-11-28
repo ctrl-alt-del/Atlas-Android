@@ -121,7 +121,7 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
 
     private void showGifSearchView() {
         mGifsRecyclerView.setVisibility(View.VISIBLE);
-        mMessageEditText.setHint(R.string.tenor_sdk_search_hint);
+        mMessageEditText.setHint(R.string.tenor_search_hint);
         mOpenGifsRVButton.setImageResource(R.drawable.ic_arrow_back_white_24dp_tinted);
     }
 

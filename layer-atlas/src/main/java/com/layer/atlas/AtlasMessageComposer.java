@@ -298,6 +298,7 @@ public class AtlasMessageComposer extends FrameLayout {
         mMessageEditText.setTextSize(TypedValue.COMPLEX_UNIT_PX, mTextSize);
         EditTextUtil.setCursorDrawableColor(mMessageEditText, mCursorColor);
         EditTextUtil.setUnderlineColor(mMessageEditText, mUnderlineColor);
+        applyTypeface();
 
         ColorStateList list = getResources().getColorStateList(R.color.atlas_message_composer_attach_button);
         Drawable d = DrawableCompat.wrap(mAttachButton.getDrawable().mutate());
@@ -317,7 +318,7 @@ public class AtlasMessageComposer extends FrameLayout {
         ((TextView) menuItem.findViewById(R.id.title)).setText(sender.getTitle());
         menuItem.setTag(sender);
         menuItem.setOnClickListener(new OnClickListener() {
-            public void onClick(final View v) {
+            public void onClick(View v) {
                 mAttachmentMenu.dismiss();
                 ((AttachmentSender) v.getTag()).requestSend();
             }
