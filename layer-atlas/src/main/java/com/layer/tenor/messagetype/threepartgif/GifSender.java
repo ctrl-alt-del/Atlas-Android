@@ -1,4 +1,4 @@
-package com.layer.atlas.tenor.threepartgif;
+package com.layer.tenor.messagetype.threepartgif;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -7,8 +7,8 @@ import android.support.annotation.Nullable;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AttachmentSender;
-import com.layer.atlas.tenor.StringConstant;
-import com.layer.atlas.tenor.model.IMinimalResult;
+import com.layer.tenor.util.StringConstant;
+import com.layer.tenor.model.IMinimalResult;
 import com.layer.atlas.util.Util;
 import com.layer.sdk.messaging.Identity;
 import com.layer.sdk.messaging.Message;

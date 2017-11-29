@@ -1,4 +1,4 @@
-package com.layer.atlas.tenor.adapters;
+package com.layer.tenor.adapter;
 
 public interface OnDismissPopupWindowListener {
     void dismiss();

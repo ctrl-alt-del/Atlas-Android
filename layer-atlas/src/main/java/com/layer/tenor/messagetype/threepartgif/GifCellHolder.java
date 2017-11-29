@@ -1,8 +1,7 @@
-package com.layer.atlas.tenor.threepartgif;
+package com.layer.tenor.messagetype.threepartgif;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
@@ -13,6 +12,8 @@ import android.widget.ImageView;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
+import com.layer.tenor.gifpopup.GifPopupActivity;
+import com.layer.tenor.messagetype.gif.GifLoaderClient;
 import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.layer.atlas.tenor;
+package com.layer.tenor;
 
 import android.app.Activity;
 import android.content.Context;
@@ -46,13 +46,14 @@ import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AttachmentSender;
 import com.layer.atlas.messagetypes.MessageSender;
 import com.layer.atlas.messagetypes.text.TextSender;
-import com.layer.atlas.tenor.adapters.OnDismissPopupWindowListener;
-import com.layer.atlas.tenor.threepartgif.GifLoaderClient;
-import com.layer.atlas.tenor.threepartgif.GifSender;
+import com.layer.tenor.adapter.OnDismissPopupWindowListener;
+import com.layer.tenor.messagetype.gif.GifLoaderClient;
+import com.layer.tenor.messagetype.threepartgif.GifSender;
 import com.layer.atlas.util.EditTextUtil;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
+import com.layer.tenor.util.GifSearchQueryClerk;
 
 import java.util.ArrayList;
 
@@ -152,7 +153,7 @@ public class TenorMessageComposer extends FrameLayout {
 
                 showGifSearchView();
 
-                mGifsRecyclerView.setSearchQuery(mMessageEditText.getText().toString().trim());
+                GifSearchQueryClerk.get().update(mMessageEditText.getText().toString().trim());
             }
         });
 
@@ -191,7 +192,7 @@ public class TenorMessageComposer extends FrameLayout {
                     mConversation.send(LayerTypingIndicatorListener.TypingIndicator.FINISHED);
                 }
 
-                mGifsRecyclerView.setSearchQuery(message);
+                GifSearchQueryClerk.get().update(message);
             }
         });
 

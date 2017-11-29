@@ -19,6 +19,6 @@
 
     <application>
         <activity android:name=".util.imagepopup.AtlasImagePopupActivity"/>
-        <activity android:name=".tenor.threepartgif.GifPopupActivity"/>
+        <activity android:name="com.layer.tenor.gifpopup.GifPopupActivity"/>
     </application>
 </manifest>

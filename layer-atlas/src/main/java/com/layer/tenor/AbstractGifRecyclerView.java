@@ -1,26 +1,19 @@
-package com.layer.atlas.tenor;
+package com.layer.tenor;
 
 import android.content.Context;
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
-import com.layer.atlas.tenor.adapters.OnDismissPopupWindowListener;
-import com.layer.atlas.tenor.threepartgif.GifLoaderClient;
-import com.layer.atlas.tenor.threepartgif.GifSender;
+import com.layer.tenor.adapter.OnDismissPopupWindowListener;
+import com.layer.tenor.messagetype.gif.GifLoaderClient;
+import com.layer.tenor.messagetype.threepartgif.GifSender;
 
 public class AbstractGifRecyclerView extends RecyclerView {
 
     private GifLoaderClient mGifLoaderClient;
     private OnDismissPopupWindowListener mOnDismissListener;
     private GifSender mGifSender;
-
-    @NonNull
-    private String mSearchQuery = "";
-    @NonNull
-    private String mPreviousSearchQuery = mSearchQuery;
 
     public AbstractGifRecyclerView(Context context) {
         this(context, null);
@@ -52,20 +45,5 @@ public class AbstractGifRecyclerView extends RecyclerView {
 
     public GifLoaderClient getGifLoaderClient() {
         return mGifLoaderClient;
-    }
-
-    @CallSuper
-    public void setSearchQuery(String searchQuery) {
-        mPreviousSearchQuery = mSearchQuery;
-        mSearchQuery = StringConstant.getOrEmpty(searchQuery).trim();
-    }
-
-    @NonNull
-    public String getSearchQuery() {
-        return mSearchQuery;
-    }
-
-    public boolean isSearchQueryChanged() {
-        return mSearchQuery.equals(mPreviousSearchQuery);
     }
 }

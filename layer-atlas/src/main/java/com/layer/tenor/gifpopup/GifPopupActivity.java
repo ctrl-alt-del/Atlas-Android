@@ -1,4 +1,4 @@
-package com.layer.atlas.tenor.threepartgif;
+package com.layer.tenor.gifpopup;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,6 +10,7 @@ import android.widget.ImageView;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.layer.atlas.R;
+import com.layer.tenor.messagetype.gif.GifLoaderClient;
 import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerProgressListener;
@@ -19,7 +20,7 @@ import com.layer.sdk.messaging.MessagePart;
  * GifPopupActivity implements a ful resolution gif viewer Activity.  This Activity
  * registers with the LayerClient as a LayerProgressListener to monitor progress.
  */
-public abstract class GifPopupActivity extends Activity implements LayerProgressListener.BackgroundThread.Weak, SubsamplingScaleImageView.OnImageEventListener {
+public class GifPopupActivity extends Activity implements LayerProgressListener.BackgroundThread.Weak, SubsamplingScaleImageView.OnImageEventListener {
     private static LayerClient sLayerClient;
     private static GifLoaderClient sGifLoaderClient;
 
@@ -45,8 +46,6 @@ public abstract class GifPopupActivity extends Activity implements LayerProgress
             sGifLoaderClient.load(mImageView, mMessagePartFullId, null);
         }
     }
-
-    public abstract void load(@NonNull ImageView imageView, @Nullable String messagePartFullId);
 
     @Override
     protected void onResume() {

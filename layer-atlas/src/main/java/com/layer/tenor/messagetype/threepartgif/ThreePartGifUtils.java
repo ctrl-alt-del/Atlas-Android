@@ -1,8 +1,8 @@
-package com.layer.atlas.tenor.threepartgif;
+package com.layer.tenor.messagetype.threepartgif;
 
 import android.text.TextUtils;
 
-import com.layer.atlas.tenor.model.IMinimalResult;
+import com.layer.tenor.model.IMinimalResult;
 import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;

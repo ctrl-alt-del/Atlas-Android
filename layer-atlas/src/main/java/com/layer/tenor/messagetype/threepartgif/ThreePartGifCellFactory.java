@@ -1,4 +1,4 @@
-package com.layer.atlas.tenor.threepartgif;
+package com.layer.tenor.messagetype.threepartgif;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
+import com.layer.tenor.messagetype.gif.GifLoaderClient;
 import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
