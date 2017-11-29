@@ -33,9 +33,6 @@ android {
 repositories {
     maven { url "https://raw.githubusercontent.com/layerhq/releases-android/master/releases/" }
     jcenter()
-    flatDir {
-        dirs 'libs'
-    }
 }
 
 ext {
@@ -74,12 +71,6 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
-    compile(name: 'tenor-android-core-release', ext: 'aar') {
-        transitive = true
-    }
-
-    compile 'com.android.support:support-v4:24.2.1'
 }
 
 def sdkPom() {

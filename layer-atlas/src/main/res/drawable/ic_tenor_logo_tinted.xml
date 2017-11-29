@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?><!-- For compatibility below API 21 -->
 <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
     android:src="@drawable/ic_logo_white"
-    android:tint="@color/tenor_sdk_primary_color" />
+    android:tint="@color/tenor_primary_color" />

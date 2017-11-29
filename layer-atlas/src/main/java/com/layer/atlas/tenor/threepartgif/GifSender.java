@@ -7,14 +7,12 @@ import android.support.annotation.Nullable;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AttachmentSender;
+import com.layer.atlas.tenor.StringConstant;
+import com.layer.atlas.tenor.model.IMinimalResult;
 import com.layer.atlas.util.Util;
 import com.layer.sdk.messaging.Identity;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.PushNotificationPayload;
-import com.tenor.android.core.constant.StringConstant;
-import com.tenor.android.core.model.impl.Result;
-import com.tenor.android.core.network.ApiClient;
-import com.tenor.android.core.util.AbstractWeakReferenceUtils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -44,13 +42,12 @@ public class GifSender extends AttachmentSender {
         return false;
     }
 
-    public boolean send(@Nullable Result result) {
+    public boolean send(@Nullable IMinimalResult result) {
         if (result == null) {
             return false;
         }
 
-        if (!AbstractWeakReferenceUtils.isAlive(mActivity)
-                || mActivity.get().isFinishing()) {
+        if (mActivity.get() == null || mActivity.get().isFinishing()) {
             return false;
         }
 
@@ -63,7 +60,7 @@ public class GifSender extends AttachmentSender {
         String myName = me != null ? Util.getDisplayName(me) : StringConstant.EMPTY;
         final Message message;
         try {
-            message = ThreePartGifUtils.newThreePartGifMessage(mActivity.get(), getLayerClient(), result);
+            message = ThreePartGifUtils.newThreePartGifMessage(getLayerClient(), result);
         } catch (IOException ignored) {
             return false;
         }

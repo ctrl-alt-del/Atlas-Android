@@ -4,8 +4,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.tenor.android.core.constant.StringConstant;
-
 public class SmartGifsUtils {
 
     private static String sLastConversation = StringConstant.EMPTY;

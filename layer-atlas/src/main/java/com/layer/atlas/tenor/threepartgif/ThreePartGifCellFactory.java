@@ -10,10 +10,13 @@ import android.view.ViewGroup;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
+import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
-import com.tenor.android.core.util.AbstractGsonUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -108,8 +111,13 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
             return null;
         }
 
+        GifInfo info = new GifInfo();
         try {
-            GifInfo info = AbstractGsonUtils.getInstance().fromJson(str, GifInfo.class);
+            JSONObject infoObject = new JSONObject(str);
+            info.orientation = infoObject.getInt("orientation");
+            info.width = infoObject.getInt("width");
+            info.height = infoObject.getInt("height");
+            info.contentId = infoObject.getString("contentId");
 
             if (TextUtils.isEmpty(info.previewPartId)) {
                 info.previewPartId = new String(ThreePartGifUtils.getPreviewPart(message).getData());
@@ -119,8 +127,11 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
                 info.fullPartId = new String(ThreePartGifUtils.getFullPart(message).getData());
             }
             return info;
-        } catch (Exception ignored) {
-            return null;
+        } catch (JSONException e) {
+            if (Log.isLoggable(Log.ERROR)) {
+                Log.e(e.getMessage(), e);
+            }
         }
+        return null;
     }
 }

@@ -25,13 +25,9 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -50,29 +46,19 @@ import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AttachmentSender;
 import com.layer.atlas.messagetypes.MessageSender;
 import com.layer.atlas.messagetypes.text.TextSender;
-import com.layer.atlas.tenor.adapters.GifAdapter;
 import com.layer.atlas.tenor.adapters.OnDismissPopupWindowListener;
-import com.layer.atlas.tenor.rvitem.ResultRVItem;
 import com.layer.atlas.tenor.threepartgif.GifLoaderClient;
 import com.layer.atlas.tenor.threepartgif.GifSender;
-import com.layer.atlas.tenor.views.IKeyboardView;
 import com.layer.atlas.util.EditTextUtil;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
-import com.tenor.android.core.constant.StringConstant;
-import com.tenor.android.core.model.impl.Result;
-import com.tenor.android.core.response.BaseError;
-import com.tenor.android.core.response.impl.GifsResponse;
-import com.tenor.android.core.util.AbstractLocaleUtils;
-import com.tenor.android.core.widget.adapter.AbstractRVItem;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
-public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
-    private EditText mMessageEditText;
+public class TenorMessageComposer extends FrameLayout {
+    protected EditText mMessageEditText;
     private Button mSendButton;
     private ImageView mAttachButton;
     private ImageView mOpenGifsRVButton;
@@ -87,7 +73,7 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
     private MessageSender.Callback mMessageSenderCallback;
 
     private PopupWindow mAttachmentMenu;
-    private RecyclerView mGifsRecyclerView;
+    private AbstractGifRecyclerView mGifsRecyclerView;
 
     // styles
     private boolean mEnabled;
@@ -98,11 +84,6 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
     private int mUnderlineColor;
     private int mCursorColor;
     private Drawable mAttachmentSendersBackground;
-    private IKeyboardView.Presenter mPresenter;
-    private String mNextPageId = "";
-    private GifAdapter<TenorMessageComposer> mAdapter;
-    private static boolean sTextChanged;
-
 
     public TenorMessageComposer(Context context) {
         super(context);
@@ -125,35 +106,10 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
         mOpenGifsRVButton.setImageResource(R.drawable.ic_arrow_back_white_24dp_tinted);
     }
 
-    private void hideGifSearchView() {
+    public void hideGifSearchView() {
         mGifsRecyclerView.setVisibility(View.GONE);
         mMessageEditText.setHint(R.string.atlas_message_composer_hint);
         mOpenGifsRVButton.setImageResource(R.drawable.ic_tenor_logo_tinted);
-    }
-
-    private void performGifSearch(Editable s) {
-
-        String str = s.toString().trim();
-        if (str.length() == 0) {
-            searchSmartOrTrendingGifs();
-            return;
-        }
-
-        if (mPresenter == null) {
-            return;
-        }
-
-        final boolean isAppend = !sTextChanged && !SmartGifsUtils.isMessageChanged();
-        if (!isAppend) {
-            mNextPageId = StringConstant.EMPTY;
-        }
-
-        mPresenter.search(str, AbstractLocaleUtils.getCurrentLocaleName(getContext()),
-                24, mNextPageId, null, isAppend);
-    }
-
-    public <P extends IKeyboardView.Presenter> void injectPresenter(@NonNull P presenter) {
-        mPresenter = presenter;
     }
 
     /**
@@ -161,49 +117,29 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
      *
      * @return this TenorMessageComposer.
      */
-    public TenorMessageComposer init(LayerClient layerClient, GifLoaderClient gifLoaderClient) {
+    public TenorMessageComposer init(LayerClient layerClient,
+                                     GifLoaderClient gifLoaderClient,
+                                     AbstractGifRecyclerView recyclerView) {
         LayoutInflater.from(getContext()).inflate(R.layout.tenor_message_composer, this);
+
 
         mLayerClient = layerClient;
         mGifLoaderClient = gifLoaderClient;
 
-        mGifsRecyclerView = (RecyclerView) findViewById(R.id.tmc_rv_gifs);
+        mGifsRecyclerView = recyclerView;
+        final View stub = findViewById(R.id.tmc_rv_gifs);
+        final LinearLayout root = (LinearLayout) findViewById(R.id.tmc_ll_root);
+        root.addView(mGifsRecyclerView, stub.getLayoutParams());
+        root.removeView(stub);
+
+
         mGifsRecyclerView.setFocusable(true);
-
-        mAdapter = new GifAdapter<>(this, mGifLoaderClient,
-                new GifLoaderClient.Callback() {
-                    @Override
-                    public <V extends ImageView> void success(V view) {
-
-                    }
-
-                    @Override
-                    public void failure() {
-
-                    }
-                });
-        mAdapter.setDismissPopupWindowListener(new OnDismissPopupWindowListener() {
+        mGifsRecyclerView.setOnDismissPopupWindowListener(new OnDismissPopupWindowListener() {
             @Override
             public void dismiss() {
                 hideGifSearchView();
             }
         });
-
-        mGifsRecyclerView.setAdapter(mAdapter);
-
-        final StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.HORIZONTAL);
-        mGifsRecyclerView.setLayoutManager(layoutManager);
-
-//        mGifsRecyclerView.addOnScrollListener(new EndlessRVOnScrollListener(layoutManager) {
-//            @Override
-//            public void onLoadMore(int currentPage) {
-//                if (mMessageEditText.getText().toString().trim().length() > 0) {
-//                    performGifSearch(mMessageEditText.getText());
-//                } else {
-//                    searchSmartOrTrendingGifs();
-//                }
-//            }
-//        });
 
         mOpenGifsRVButton = (ImageView) findViewById(R.id.tmc_iv_open_gifs_rv);
         mOpenGifsRVButton.setOnClickListener(new OnClickListener() {
@@ -215,11 +151,8 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
                 }
 
                 showGifSearchView();
-                if (mMessageEditText.getText().toString().trim().length() > 0) {
-                    performGifSearch(mMessageEditText.getText());
-                } else {
-                    searchSmartOrTrendingGifs();
-                }
+
+                mGifsRecyclerView.setSearchQuery(mMessageEditText.getText().toString().trim());
             }
         });
 
@@ -246,7 +179,7 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
 
             @Override
             public void afterTextChanged(Editable s) {
-                sTextChanged = true;
+
                 if (mConversation == null || mConversation.isDeleted()) return;
 
                 String message = s.toString().trim();
@@ -258,9 +191,7 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
                     mConversation.send(LayerTypingIndicatorListener.TypingIndicator.FINISHED);
                 }
 
-                if (mGifsRecyclerView.getVisibility() == View.VISIBLE) {
-                    performGifSearch(s);
-                }
+                mGifsRecyclerView.setSearchQuery(message);
             }
         });
 
@@ -328,7 +259,7 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
         mGifSender.init(this.getContext().getApplicationContext(), mLayerClient);
         mGifSender.setConversation(mConversation);
         if (mMessageSenderCallback != null) mGifSender.setCallback(mMessageSenderCallback);
-        mAdapter.setGifSender(mGifSender);
+        mGifsRecyclerView.setGifSender(mGifSender);
         return this;
     }
 
@@ -452,29 +383,6 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
         mMessageEditText.setTypeface(mTypeFace, mTextStyle);
     }
 
-    private void searchSmartOrTrendingGifs() {
-        if (mPresenter == null) {
-            return;
-        }
-
-        /*
-         * Don't append new gifs to the existing ones if:
-         * (1) user type in new character
-         * (2) user receive new message
-         */
-        final boolean isAppend = !sTextChanged && !SmartGifsUtils.isMessageChanged();
-        if (!isAppend) {
-            mNextPageId = StringConstant.EMPTY;
-        }
-
-        if (!TextUtils.isEmpty(SmartGifsUtils.getSearchQuery())) {
-            mPresenter.search(SmartGifsUtils.getSearchQuery(),
-                    AbstractLocaleUtils.getCurrentLocaleName(getContext()), 24, mNextPageId, null, isAppend);
-        } else {
-            mPresenter.getTrending(24, mNextPageId, null, isAppend);
-        }
-    }
-
     private void addAttachmentMenuItem(AttachmentSender sender) {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         LinearLayout menuLayout = (LinearLayout) mAttachmentMenu.getContentView();
@@ -485,11 +393,7 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
         menuItem.setOnClickListener(new OnClickListener() {
             public void onClick(final View v) {
                 mAttachmentMenu.dismiss();
-                if (v.getTag() instanceof GifSender) {
-                    searchSmartOrTrendingGifs();
-                } else {
-                    ((AttachmentSender) v.getTag()).requestSend();
-                }
+                ((AttachmentSender) v.getTag()).requestSend();
             }
         });
         if (sender.getIcon() != null) {
@@ -545,44 +449,6 @@ public class TenorMessageComposer extends FrameLayout implements IKeyboardView {
             if (parcelable == null) continue;
             sender.onRestoreInstanceState(parcelable);
         }
-    }
-
-    @Override
-    public void onReceiveSearchResultsSucceed(@NonNull GifsResponse response, boolean isAppend) {
-        sTextChanged = false;
-        SmartGifsUtils.resetMessageChanged();
-        List<AbstractRVItem> items = new ArrayList<>();
-
-        for (Result result : response.getResults()) {
-            items.add(new ResultRVItem(GifAdapter.TYPE_GIF_ITEM, result));
-        }
-        mAdapter.insert(items, isAppend);
-        mNextPageId = response.getNext();
-    }
-
-    @Override
-    public void onReceiveSearchResultsFailed(@NonNull BaseError error) {
-        sTextChanged = false;
-        SmartGifsUtils.resetMessageChanged();
-    }
-
-    @Override
-    public void onReceiveTrendingSucceeded(@NonNull List<Result> list, @NonNull String nextPageId, boolean isAppend) {
-        sTextChanged = false;
-        SmartGifsUtils.resetMessageChanged();
-        List<AbstractRVItem> items = new ArrayList<>();
-
-        for (Result result : list) {
-            items.add(new ResultRVItem(GifAdapter.TYPE_GIF_ITEM, result));
-        }
-        mAdapter.insert(items, isAppend);
-        mNextPageId = nextPageId;
-    }
-
-    @Override
-    public void onReceiveTrendingFailed(BaseError error) {
-        sTextChanged = false;
-        SmartGifsUtils.resetMessageChanged();
     }
 
     /**
