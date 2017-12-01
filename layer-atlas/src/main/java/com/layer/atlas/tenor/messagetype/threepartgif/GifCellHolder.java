@@ -1,4 +1,4 @@
-package com.layer.tenor.messagetype.threepartgif;
+package com.layer.atlas.tenor.messagetype.threepartgif;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
@@ -8,12 +8,13 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
-import com.layer.tenor.gifpopup.GifPopupActivity;
-import com.layer.tenor.messagetype.gif.GifLoaderClient;
+import com.layer.atlas.tenor.gifpopup.GifPopupActivity;
+import com.layer.atlas.tenor.messagetype.gif.GifLoaderClient;
 import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
@@ -47,55 +48,38 @@ public class GifCellHolder extends AtlasCellFactory.CellHolder implements View.O
 
     public void render(@Nullable final GifInfo info, @Nullable final Message message,
                        @Nullable OnLoadGifCallback callback) {
-        if (callback != null) {
-            callback.render(info, message);
+
+        if (info == null || message == null) {
+            return;
         }
+
+        mInfo = info;
+        mMessage = message;
+
+
+        ViewGroup.LayoutParams params = mImageView.getLayoutParams();
+        if (params != null) {
+            // use R.dimen to specify the width base on your needs
+            final int w = 500;
+            final int h = w * info.height / info.width; // adjust height to keep the proportion
+            params.width = w;
+            params.height = h;
+            mImageView.setLayoutParams(params);
+        }
+
+        mProgressBar.show();
+        mGifLoaderClient.load(mImageView, info, new GifLoaderClient.Callback(){
+            @Override
+            public <V extends ImageView> void success(V view) {
+                mProgressBar.hide();
+            }
+
+            @Override
+            public void failure() {
+                mProgressBar.hide();
+            }
+        });
     }
-//    {
-//
-//        if (info == null || message == null) {
-//            return;
-//        }
-//
-//        mInfo = info;
-//        mMessage = message;
-//
-//        mProgressBar.show();
-//        GlidePayload payload = new GlidePayload(mImageView, info.previewPartId)
-//                .setPlaceholder(PLACEHOLDER)
-//                .setListener(new OnImageLoadedListener() {
-//                    @Override
-//                    public void onImageLoadingFinished() {
-//                        mProgressBar.hide();
-//                    }
-//
-//                    @Override
-//                    public void onImageLoadingFailed() {
-//                        mProgressBar.hide();
-//                    }
-//                });
-//
-//        if (info.width > 0 && info.height > 0) {
-//            // adjust gif size according to screen width
-//            final float ratio = AbstractUIUtils.getScreenWidth(mrfActivity.get()) * 0.6f / info.width;
-//            final int adjustedWidth = Math.round(info.width * ratio);
-//            final int adjustedHeight = Math.round(info.height * ratio);
-//
-//            // load gif resource with specific width and height
-//            payload.setWidth(adjustedWidth);
-//            payload.setHeight(adjustedHeight);
-//
-//            ViewGroup.LayoutParams params = mImageView.getLayoutParams();
-//            if (params != null) {
-//                // specify image view with the width and height
-//                params.width = adjustedWidth;
-//                params.height = adjustedHeight;
-//                mImageView.setLayoutParams(params);
-//            }
-//        }
-//
-//        GlideUtils.load(mrfActivity.get(), payload);
-//    }
 
     @Override
     public void onClick(View v) {

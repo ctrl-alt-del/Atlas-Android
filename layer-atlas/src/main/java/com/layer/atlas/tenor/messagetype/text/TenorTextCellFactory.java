@@ -1,9 +1,9 @@
-package com.layer.tenor.messagetype.text;
+package com.layer.atlas.tenor.messagetype.text;
 
 import android.support.v7.widget.RecyclerView;
 
 import com.layer.atlas.messagetypes.text.TextCellFactory;
-import com.layer.tenor.util.GifSearchQueryClerk;
+import com.layer.atlas.tenor.util.GifSearchQueryClerk;
 import com.layer.sdk.messaging.Message;
 
 public class TenorTextCellFactory extends TextCellFactory {

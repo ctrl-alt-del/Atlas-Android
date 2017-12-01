@@ -1,4 +1,4 @@
-package com.layer.tenor.messagetype.threepartgif;
+package com.layer.atlas.tenor.messagetype.threepartgif;
 
 import android.os.Parcel;
 import android.os.Parcelable;

@@ -1,4 +1,4 @@
-package com.layer.tenor.util;
+package com.layer.atlas.tenor.util;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

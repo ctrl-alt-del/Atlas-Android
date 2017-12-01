@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.layer.tenor;
+package com.layer.atlas.tenor;
 
 import android.app.Activity;
 import android.content.Context;
@@ -46,14 +46,14 @@ import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AttachmentSender;
 import com.layer.atlas.messagetypes.MessageSender;
 import com.layer.atlas.messagetypes.text.TextSender;
-import com.layer.tenor.adapter.OnDismissPopupWindowListener;
-import com.layer.tenor.messagetype.gif.GifLoaderClient;
-import com.layer.tenor.messagetype.threepartgif.GifSender;
+import com.layer.atlas.tenor.adapter.OnDismissPopupWindowListener;
+import com.layer.atlas.tenor.messagetype.gif.GifLoaderClient;
+import com.layer.atlas.tenor.messagetype.threepartgif.GifSender;
 import com.layer.atlas.util.EditTextUtil;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
-import com.layer.tenor.util.GifSearchQueryClerk;
+import com.layer.atlas.tenor.util.GifSearchQueryClerk;
 
 import java.util.ArrayList;
 
@@ -123,17 +123,17 @@ public class TenorMessageComposer extends FrameLayout {
                                      AbstractGifRecyclerView recyclerView) {
         LayoutInflater.from(getContext()).inflate(R.layout.tenor_message_composer, this);
 
-
         mLayerClient = layerClient;
         mGifLoaderClient = gifLoaderClient;
 
         mGifsRecyclerView = recyclerView;
         final View stub = findViewById(R.id.tmc_rv_gifs);
         final LinearLayout root = (LinearLayout) findViewById(R.id.tmc_ll_root);
-        root.addView(mGifsRecyclerView, stub.getLayoutParams());
+        root.addView(mGifsRecyclerView, 0, stub.getLayoutParams());
+        mGifsRecyclerView.setVisibility(stub.getVisibility());
         root.removeView(stub);
 
-
+        mGifsRecyclerView.loadGifs(false);
         mGifsRecyclerView.setFocusable(true);
         mGifsRecyclerView.setOnDismissPopupWindowListener(new OnDismissPopupWindowListener() {
             @Override
@@ -193,6 +193,7 @@ public class TenorMessageComposer extends FrameLayout {
                 }
 
                 GifSearchQueryClerk.get().update(message);
+                mGifsRecyclerView.postLoadGifs(false, 250);
             }
         });
 

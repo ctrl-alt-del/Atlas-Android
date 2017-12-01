@@ -1,15 +1,16 @@
-package com.layer.tenor;
+package com.layer.atlas.tenor;
 
 import android.content.Context;
+import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
-import com.layer.tenor.adapter.OnDismissPopupWindowListener;
-import com.layer.tenor.messagetype.gif.GifLoaderClient;
-import com.layer.tenor.messagetype.threepartgif.GifSender;
+import com.layer.atlas.tenor.adapter.OnDismissPopupWindowListener;
+import com.layer.atlas.tenor.messagetype.gif.GifLoaderClient;
+import com.layer.atlas.tenor.messagetype.threepartgif.GifSender;
 
-public class AbstractGifRecyclerView extends RecyclerView {
+public abstract class AbstractGifRecyclerView extends RecyclerView {
 
     private GifLoaderClient mGifLoaderClient;
     private OnDismissPopupWindowListener mOnDismissListener;
@@ -31,6 +32,7 @@ public class AbstractGifRecyclerView extends RecyclerView {
         mOnDismissListener = dismissListener;
     }
 
+    @CallSuper
     public void setGifSender(GifSender sender) {
         mGifSender = sender;
     }
@@ -46,4 +48,10 @@ public class AbstractGifRecyclerView extends RecyclerView {
     public GifLoaderClient getGifLoaderClient() {
         return mGifLoaderClient;
     }
+
+    public void loadGifs(boolean append) {
+        postLoadGifs(append, 0);
+    }
+
+    public abstract void postLoadGifs(boolean append, long delay);
 }

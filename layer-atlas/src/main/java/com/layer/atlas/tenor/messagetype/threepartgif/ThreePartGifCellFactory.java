@@ -1,16 +1,15 @@
-package com.layer.tenor.messagetype.threepartgif;
+package com.layer.atlas.tenor.messagetype.threepartgif;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
-import com.layer.tenor.messagetype.gif.GifLoaderClient;
+import com.layer.atlas.tenor.messagetype.gif.GifLoaderClient;
 import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
@@ -66,18 +65,18 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
         mOnLoadGifCallback = callback;
     }
 
-    @Override
-    public void onScrollStateChanged(int newState) {
-        switch (newState) {
-            case RecyclerView.SCROLL_STATE_DRAGGING:
-                mGifLoaderClient.pause();
-                break;
-            case RecyclerView.SCROLL_STATE_IDLE:
-            case RecyclerView.SCROLL_STATE_SETTLING:
-                mGifLoaderClient.resume();
-                break;
-        }
-    }
+//    @Override
+//    public void onScrollStateChanged(int newState) {
+//        switch (newState) {
+//            case RecyclerView.SCROLL_STATE_DRAGGING:
+//                mGifLoaderClient.pause();
+//                break;
+//            case RecyclerView.SCROLL_STATE_IDLE:
+//            case RecyclerView.SCROLL_STATE_SETTLING:
+//                mGifLoaderClient.resume();
+//                break;
+//        }
+//    }
 
     //==============================================================================================
     // Static utilities

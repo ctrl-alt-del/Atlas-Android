@@ -1,16 +1,15 @@
-package com.layer.tenor.gifpopup;
+package com.layer.atlas.tenor.gifpopup;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.widget.ImageView;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.layer.atlas.R;
-import com.layer.tenor.messagetype.gif.GifLoaderClient;
+import com.layer.atlas.tenor.messagetype.gif.GifLoaderClient;
+import com.layer.atlas.tenor.messagetype.threepartgif.GifInfo;
 import com.layer.atlas.util.Log;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerProgressListener;
@@ -27,6 +26,7 @@ public class GifPopupActivity extends Activity implements LayerProgressListener.
     private ImageView mImageView;
     private ContentLoadingProgressBar mProgressBar;
     private String mMessagePartFullId;
+    private GifInfo mGifInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +39,12 @@ public class GifPopupActivity extends Activity implements LayerProgressListener.
 
         Intent intent = getIntent();
         if (intent == null) return;
+        mGifInfo = intent.getParcelableExtra("info");
         mMessagePartFullId = intent.getStringExtra("fullId");
 
         mProgressBar.show();
         if (sGifLoaderClient != null) {
-            sGifLoaderClient.load(mImageView, mMessagePartFullId, null);
+            sGifLoaderClient.load(mImageView, mGifInfo, null);
         }
     }
 
@@ -51,14 +52,14 @@ public class GifPopupActivity extends Activity implements LayerProgressListener.
     protected void onResume() {
         super.onResume();
         sLayerClient.registerProgressListener(null, this);
-        sGifLoaderClient.resume();
+        sGifLoaderClient.resume(mImageView);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         sLayerClient.unregisterProgressListener(null, this);
-        sGifLoaderClient.pause();
+        sGifLoaderClient.pause(mImageView);
     }
 
     public static void init(LayerClient layerClient, GifLoaderClient gifLoaderClient) {

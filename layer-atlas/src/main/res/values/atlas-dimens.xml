@@ -91,4 +91,5 @@
     <dimen name="atlas_messages_max_cell_height">370dp</dimen>
 
     <dimen name="tenor_gif_adapter_height">96dp</dimen>
+    <dimen name="tenor_progress_bar_size">32dp</dimen>
 </resources>
