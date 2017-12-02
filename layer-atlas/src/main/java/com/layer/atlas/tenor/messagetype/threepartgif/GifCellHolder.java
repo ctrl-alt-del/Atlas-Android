@@ -2,6 +2,7 @@ package com.layer.atlas.tenor.messagetype.threepartgif;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
@@ -84,21 +85,18 @@ public class GifCellHolder extends AtlasCellFactory.CellHolder implements View.O
     @Override
     public void onClick(View v) {
         GifPopupActivity.init(mLayerClient, mGifLoaderClient);
-
-        if (!(v.getContext() instanceof Activity)) {
-            return;
-        }
-        Activity activity = (Activity) mImageView.getContext();
-
+        Context context = v.getContext();
         Intent intent = new Intent(mImageView.getContext(), GifPopupActivity.class);
         intent.putExtra("previewId", mInfo.previewPartId);
         intent.putExtra("fullId", mInfo.fullPartId);
         intent.putExtra("info", mInfo);
 
-        if (Build.VERSION.SDK_INT >= 21) {
-            activity.startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(activity, v, "gif").toBundle());
+        if (Build.VERSION.SDK_INT >= 21 && context instanceof Activity) {
+            context.startActivity(intent,
+                    ActivityOptions.makeSceneTransitionAnimation(
+                            (Activity) context, v, "gif").toBundle());
         } else {
-            activity.startActivity(intent);
+            context.startActivity(intent);
         }
     }
 
