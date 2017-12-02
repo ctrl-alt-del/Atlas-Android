@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.Editable;
@@ -46,14 +47,15 @@ import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AttachmentSender;
 import com.layer.atlas.messagetypes.MessageSender;
 import com.layer.atlas.messagetypes.text.TextSender;
-import com.layer.atlas.tenor.adapter.OnDismissPopupWindowListener;
+import com.layer.atlas.tenor.adapter.OnSendGifListener;
 import com.layer.atlas.tenor.messagetype.gif.GifLoaderClient;
 import com.layer.atlas.tenor.messagetype.threepartgif.GifSender;
+import com.layer.atlas.tenor.model.IMinimalResult;
+import com.layer.atlas.tenor.util.GifSearchQueryClerk;
 import com.layer.atlas.util.EditTextUtil;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
-import com.layer.atlas.tenor.util.GifSearchQueryClerk;
 
 import java.util.ArrayList;
 
@@ -135,9 +137,10 @@ public class TenorMessageComposer extends FrameLayout {
 
         mGifsRecyclerView.loadGifs(false);
         mGifsRecyclerView.setFocusable(true);
-        mGifsRecyclerView.setOnDismissPopupWindowListener(new OnDismissPopupWindowListener() {
+        mGifsRecyclerView.setOnSendGifListener(new OnSendGifListener() {
             @Override
-            public void dismiss() {
+            public void onGifSent(@NonNull IMinimalResult minimalResult) {
+                mGifLoaderClient.registerShare(minimalResult);
                 hideGifSearchView();
             }
         });

@@ -5,4 +5,5 @@
     android:layout_height="match_parent"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?android:selectableItemBackground" />
+    android:foreground="?android:selectableItemBackground"
+    android:scaleType="fitXY" />

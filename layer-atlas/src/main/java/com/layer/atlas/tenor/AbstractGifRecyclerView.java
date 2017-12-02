@@ -6,15 +6,12 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
-import com.layer.atlas.tenor.adapter.OnDismissPopupWindowListener;
+import com.layer.atlas.tenor.adapter.IGifAdapter;
+import com.layer.atlas.tenor.adapter.OnSendGifListener;
 import com.layer.atlas.tenor.messagetype.gif.GifLoaderClient;
 import com.layer.atlas.tenor.messagetype.threepartgif.GifSender;
 
 public abstract class AbstractGifRecyclerView extends RecyclerView {
-
-    private GifLoaderClient mGifLoaderClient;
-    private OnDismissPopupWindowListener mOnDismissListener;
-    private GifSender mGifSender;
 
     public AbstractGifRecyclerView(Context context) {
         this(context, null);
@@ -28,25 +25,15 @@ public abstract class AbstractGifRecyclerView extends RecyclerView {
         super(context, attrs, defStyle);
     }
 
-    public void setOnDismissPopupWindowListener(OnDismissPopupWindowListener dismissListener) {
-        mOnDismissListener = dismissListener;
-    }
+    public void setOnSendGifListener(OnSendGifListener listener) {
+        if (getAdapter() == null) {
+            throw new IllegalStateException("Please call setAdapter() first before calling this method.");
+        }
 
-    @CallSuper
-    public void setGifSender(GifSender sender) {
-        mGifSender = sender;
-    }
-
-    public GifSender getGifSender() {
-        return mGifSender;
-    }
-
-    public void setGifLoaderClient(GifLoaderClient gifLoaderClient) {
-        mGifLoaderClient = gifLoaderClient;
-    }
-
-    public GifLoaderClient getGifLoaderClient() {
-        return mGifLoaderClient;
+        if (!(getAdapter() instanceof IGifAdapter)) {
+            throw new IllegalArgumentException("Please make sure your adapter implements IGifAdapter");
+        }
+        ((IGifAdapter) getAdapter()).setOnSendGifListener(listener);
     }
 
     public void loadGifs(boolean append) {
@@ -54,4 +41,6 @@ public abstract class AbstractGifRecyclerView extends RecyclerView {
     }
 
     public abstract void postLoadGifs(boolean append, long delay);
+
+    public abstract void setGifSender(GifSender sender);
 }

@@ -6,6 +6,9 @@ import android.support.annotation.NonNull;
 public interface IMinimalResult {
 
     @NonNull
+    String getQuery();
+
+    @NonNull
     String getId();
 
     @NonNull

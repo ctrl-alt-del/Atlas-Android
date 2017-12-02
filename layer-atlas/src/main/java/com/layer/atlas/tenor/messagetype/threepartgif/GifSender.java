@@ -70,9 +70,6 @@ public class GifSender extends AttachmentSender {
                 .build();
         message.getOptions().defaultPushNotificationPayload(payload);
 
-        // register share to improve the accuracy of search results in the future
-        // ApiClient.registerShare(mActivity.get(), result.getId());
-
         return send(message);
     }
 }
