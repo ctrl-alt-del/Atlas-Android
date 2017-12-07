@@ -41,7 +41,6 @@ ext {
     org = "layerhq"
     repo = "Atlas-Android"
     groupFolder = "com/layer/atlas"
-
 }
 
 dependencies {

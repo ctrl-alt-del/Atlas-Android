@@ -68,6 +68,7 @@ public class TextCellFactory extends AtlasCellFactory<TextCellFactory.CellHolder
 
     @Override
     public void bindCellHolder(CellHolder cellHolder, final TextInfo parsed, Message message, CellHolderSpecs specs) {
+
         //Checking if the TextView is being recycled, replace the value in the map with the new message id
         if (mTextViewUriHashMap.containsKey(cellHolder.mTextView)) {
             mTextViewUriHashMap.put(cellHolder.mTextView, message.getId());

@@ -65,19 +65,6 @@ public class ThreePartGifCellFactory extends AtlasCellFactory<GifCellHolder, Gif
         mOnLoadGifCallback = callback;
     }
 
-//    @Override
-//    public void onScrollStateChanged(int newState) {
-//        switch (newState) {
-//            case RecyclerView.SCROLL_STATE_DRAGGING:
-//                mGifLoaderClient.pause();
-//                break;
-//            case RecyclerView.SCROLL_STATE_IDLE:
-//            case RecyclerView.SCROLL_STATE_SETTLING:
-//                mGifLoaderClient.resume();
-//                break;
-//        }
-//    }
-
     //==============================================================================================
     // Static utilities
     //==============================================================================================
